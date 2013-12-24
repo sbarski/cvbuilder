@@ -10,9 +10,9 @@ open System.Configuration
 type VersionRendition() =
     [<DefaultValue>] val mutable Message : string
 
+[<RoutePrefix("api/version")>]
 type VersionController() =
     inherit ApiController()
 
-    [<Route("api/version")>]
     member x.Get() =
         x.Request.CreateResponse(HttpStatusCode.OK, VersionRendition(Message = ConfigurationManager.AppSettings.Item("version")))

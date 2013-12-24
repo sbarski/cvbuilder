@@ -8,6 +8,10 @@
             .when('/about', {
                 templateUrl: '/public/views/site/about.html'
             })
+            .when('/register', {
+                templateUrl: '/public/views/account/register.html',
+                controller: 'accountController'
+            })
             .otherwise({
                 redirectTo: '/'
             });

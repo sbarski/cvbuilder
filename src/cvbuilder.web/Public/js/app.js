@@ -6,6 +6,9 @@ angular.module("cvbuilder.routes", []).config([ "$routeProvider", "$locationProv
         templateUrl: "/public/views/site/frontpage.html"
     }).when("/about", {
         templateUrl: "/public/views/site/about.html"
+    }).when("/register", {
+        templateUrl: "/public/views/account/register.html",
+        controller: "accountController"
     }).otherwise({
         redirectTo: "/"
     });
@@ -16,7 +19,7 @@ var app = angular.module("cvbuilder.config", []);
 app.factory("cache", [ "$cacheFactory", function(a) {
     var b = a("cvbuilder-cache");
     return b;
-} ]), angular.module("myApp.controllers", []).controller("MyCtrl1", [ function() {} ]).controller("MyCtrl2", [ function() {} ]), 
+} ]), angular.module("cvbuilder.controllers", []).controller("accountController", [ "$scope", "cache", "accountService", function() {} ]), 
 angular.module("cvbuilder.controllers", []).controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
     a.version = null != d ? d : c.getVersion().then(function(c) {
@@ -30,7 +33,12 @@ angular.module("cvbuilder.controllers", []).controller("versionController", [ "$
     return function(b, c) {
         c.text(a);
     };
-} ]), angular.module("myApp.services", []).value("version", "0.1"), angular.module("cvbuilder.services", []).factory("versionService", [ "$http", function(a) {
+} ]), angular.module("cvbuilder.services", []).factory("accountService", [ "$http", function() {
+    return {
+        register: function() {},
+        login: function() {}
+    };
+} ]), angular.module("cvbuilder.services", []).factory("versionService", [ "$http", function(a) {
     return {
         getVersion: function() {
             return a.get("/api/version").then(function(a) {

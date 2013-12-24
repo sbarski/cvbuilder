@@ -95,16 +95,18 @@
     <None Include="Global.asax" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Global.asax.fs" />
-    <Compile Include="Controllers\HomeController.fs" />
-    <Compile Include="Controllers\VersionController.fs" />
-    <Content Include="Public\js\app.js" />
-    <None Include="Public\css\app.css" />
-    <None Include="Public\css\app.css.map" />
-    <None Include="Public\views\site\about.html" />
-    <None Include="Public\views\site\frontpage.html" />
-    <None Include="Public\views\index.html" />
+    <Compile Include="DomainTypes.fs" />
+    <Compile Include="UserService.fs" />
+    <Compile Include="SecurityService.fs" />
+    <Compile Include="HomeController.fs" />
+    <Compile Include="LoginController.fs" />
+    <Compile Include="VersionController.fs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="HttpClient">
+      <HintPath>..\packages\Http.fs.0.8.1.0\lib\net40\HttpClient.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
