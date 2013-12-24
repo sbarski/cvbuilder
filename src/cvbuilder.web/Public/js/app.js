@@ -30,4 +30,4 @@ angular.module("cvbuilder.controllers", []).controller("versionController", [ "$
         }
     };
 } ]), angular.module("cvbuilder", [ "ngRoute", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.services", "cvbuilder.directives", "cvbuilder.controllers" ]).config([ "$routeProvider", function() {} ]);
-//# sourceMappingURL=cvbuilder.web/public/js/app.js.map
+//# sourceMappingURL=src/cvbuilder.web/public/js/app.js.map

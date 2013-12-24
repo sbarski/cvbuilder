@@ -79,7 +79,7 @@ module.exports = function(grunt) {
     watch: {
             scripts: {
                 tasks: ['copy:development', 'less:development', 'uglify:development'],
-                files: ['cvbuilder.client/**/*'],
+                files: ['src/cvbuilder.client/**/*'],
                 options: {
                   livereload: true
                 }
