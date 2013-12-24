@@ -2,6 +2,9 @@
 [Bb]in/
 [Oo]bj/
 
+# module folders that can be downloaded via npm install
+node_modules/
+
 # mstest test results
 TestResults
 
