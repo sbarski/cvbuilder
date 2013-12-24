@@ -1,6 +1,15 @@
 /*! 2013-12-24 */
-
 "use strict";
+
+angular.module("cvbuilder.routes", []).config([ "$routeProvider", "$locationProvider", function(a, b) {
+    b.html5Mode(!0).hashPrefix("!"), a.when("/", {
+        templateUrl: "/public/views/site/frontpage.html"
+    }).when("/about", {
+        templateUrl: "/public/views/site/about.html"
+    }).otherwise({
+        redirectTo: "/"
+    });
+} ]);
 
 var app = angular.module("cvbuilder.config", []);
 
@@ -29,5 +38,4 @@ angular.module("cvbuilder.controllers", []).controller("versionController", [ "$
             }, function() {});
         }
     };
-} ]), angular.module("cvbuilder", [ "ngRoute", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.services", "cvbuilder.directives", "cvbuilder.controllers" ]).config([ "$routeProvider", function() {} ]);
-//# sourceMappingURL=src/cvbuilder.web/public/js/app.js.map
+} ]), angular.module("cvbuilder", [ "ngRoute", "cvbuilder.routes", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.services", "cvbuilder.directives", "cvbuilder.controllers" ]);

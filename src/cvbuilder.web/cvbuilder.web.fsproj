@@ -98,9 +98,11 @@
     <Compile Include="Controllers\HomeController.fs" />
     <Compile Include="Controllers\VersionController.fs" />
     <Content Include="Public\js\app.js" />
-    <None Include="Public\index.html" />
     <None Include="Public\css\app.css" />
     <None Include="Public\css\app.css.map" />
+    <None Include="Public\views\site\about.html" />
+    <None Include="Public\views\site\frontpage.html" />
+    <None Include="Public\views\index.html" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

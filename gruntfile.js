@@ -27,18 +27,17 @@ module.exports = function(grunt) {
     copy: {
       development: {
         files: [
-          {src: ['src/cvbuilder.client/views/index.html'], dest: 'src/cvbuilder.web/public/index.html'}
+          {expand: true, cwd: 'src/cvbuilder.client/views/', src: ['**/*'], dest: 'src/cvbuilder.web/public/views/'}
         ]
       },
       production: {
         files: [
-          {src: ['src/cvbuilder.client/views/index.html'], dest: 'src/cvbuilder.web/public/index.html'}
+          {expand: true, cwd: 'src/cvbuilder.client/views/', src: ['**/*'], dest: 'src/cvbuilder.web/public/views/'}
         ]
       }
     },
     uglify: {
       options: {
-        sourceMap: 'src/cvbuilder.web/public/js/app.js.map',
         banner: '/*! <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
        development: {
