@@ -6,39 +6,39 @@ module.exports = function(grunt) {
     less: {
             options: {
                 sourceMap: 'true',
-                sourceMapFilename: 'cvbuilder.web/public/css/app.css.map',
+                sourceMapFilename: 'src/cvbuilder.web/public/css/app.css.map',
                 sourceMapRootpath: '../../_sources/',
-                sourceMapBasepath: 'cvbuilder.client',
+                sourceMapBasepath: 'src/cvbuilder.client',
                 sourceMapURL: '/public/css/app.css.map'
             },
             production: {
                 cleancss: true,
                 compress: true,
                 files: {
-                    'cvbuilder.web/public/css/app.css': 'cvbuilder.client/less/app.less'
+                    'src/cvbuilder.web/public/css/app.css': 'src/cvbuilder.client/less/app.less'
                 },
             },
             development: {
                 files: {
-                    'cvbuilder.web/public/css/app.css': 'cvbuilder.client/less/app.less'
+                    'src/cvbuilder.web/public/css/app.css': 'src/cvbuilder.client/less/app.less'
                 }
             }
         },
     copy: {
       development: {
         files: [
-          {src: ['cvbuilder.client/views/index.html'], dest: 'cvbuilder.web/public/index.html'}
+          {src: ['src/cvbuilder.client/views/index.html'], dest: 'src/cvbuilder.web/public/index.html'}
         ]
       },
       production: {
         files: [
-          {src: ['cvbuilder.client/views/index.html'], dest: 'cvbuilder.web/public/index.html'}
+          {src: ['src/cvbuilder.client/views/index.html'], dest: 'src/cvbuilder.web/public/index.html'}
         ]
       }
     },
     uglify: {
       options: {
-        sourceMap: 'cvbuilder.web/public/js/app.js.map',
+        sourceMap: 'src/cvbuilder.web/public/js/app.js.map',
         banner: '/*! <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
        development: {
@@ -46,15 +46,15 @@ module.exports = function(grunt) {
                     beautify: true
                 },
                 files: {
-                    'cvbuilder.web/public/js/app.js': [
-                        'cvbuilder.client/js/routes.js',
-                        'cvbuilder.client/js/config.js',
-                        'cvbuilder.client/js/controllers/*.js',
-                        'cvbuilder.client/js/filters/*.js',
-                        'cvbuilder.client/js/directives/*.js',
-                        'cvbuilder.client/js/services/*.js',
-                        'cvbuilder.client/js/routes.js',
-                        'cvbuilder.client/js/app.js'
+                    'src/cvbuilder.web/public/js/app.js': [
+                        'src/cvbuilder.client/js/routes.js',
+                        'src/cvbuilder.client/js/config.js',
+                        'src/cvbuilder.client/js/controllers/*.js',
+                        'src/cvbuilder.client/js/filters/*.js',
+                        'src/cvbuilder.client/js/directives/*.js',
+                        'src/cvbuilder.client/js/services/*.js',
+                        'src/cvbuilder.client/js/routes.js',
+                        'src/cvbuilder.client/js/app.js'
                     ]
                 }
             },
@@ -63,15 +63,15 @@ module.exports = function(grunt) {
                     beautify: false
                 },
                 files: {
-                    'cvbuilder.web/public/js/app.js': [
-                        'cvbuilder.client/js/routes.js',
-                        'cvbuilder.client/js/config.js',
-                        'cvbuilder.client/js/controllers/*.js',
-                        'cvbuilder.client/js/filters/*.js',
-                        'cvbuilder.client/js/directives/*.js',
-                        'cvbuilder.client/js/services/*.js',
-                        'cvbuilder.client/js/routes.js',
-                        'cvbuilder.client/js/app.js'
+                    'src/cvbuilder.web/public/js/app.js': [
+                        'src/cvbuilder.client/js/routes.js',
+                        'src/cvbuilder.client/js/config.js',
+                        'src/cvbuilder.client/js/controllers/*.js',
+                        'src/cvbuilder.client/js/filters/*.js',
+                        'src/cvbuilder.client/js/directives/*.js',
+                        'src/cvbuilder.client/js/services/*.js',
+                        'src/cvbuilder.client/js/routes.js',
+                        'src/cvbuilder.client/js/app.js'
                     ]
                 }
             }
