@@ -5,6 +5,7 @@ open System.Web
 open System.Linq
 open System.Xml
 open System.Web.Http
+open System.Net
 open System.Threading
 open System.Security.Claims
 open Thinktecture.IdentityModel
@@ -12,7 +13,6 @@ open Thinktecture.IdentityModel.Tokens.Http
 open Thinktecture.IdentityModel.Authorization.WebApi
 
 type HttpRouteDefaults = { Controller: string; Id : obj}
-
 
 
 type Global() = 
@@ -25,6 +25,12 @@ type Global() =
             "api/{controller}/{id}", 
             { Controller = "Home"; Id = RouteParameter.Optional}) |> ignore
 
+    member this.ValidateUser(username: string, password: string) =
+        if username = "admin" && password = "password" then
+            true
+        else
+            raise (new AuthenticationException())
+    
     member this.ConfigureAuthentication (config: HttpConfiguration) =
         let mapping = new AuthenticationOptionMapping()
 
@@ -34,7 +40,7 @@ type Global() =
         auth.SendWwwAuthenticateResponseHeaders <- false
         auth.ClaimsAuthenticationManager <- new ClaimsTransformer()
         auth.SessionToken.EndpointAddress <- "/api/authenticate"
-        auth.AddBasicAuthentication(fun username password -> if username = "admin" && password = "password" then true else false)
+        auth.AddBasicAuthentication(fun username password -> this.ValidateUser(username, password))
 
         config.MessageHandlers.Add(new AuthenticationHandler(auth)) 
 

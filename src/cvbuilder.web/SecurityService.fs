@@ -15,12 +15,13 @@ type AuthorizationManager() =
         let resource = Seq.head context.Resource
         let action = Seq.head context.Action
         let claims = context.Principal.Claims
+        let isAuthenticated = if context.Principal = null || not context.Principal.Identity.IsAuthenticated then false else true
 
         let result = context.Principal.HasClaim(action.Value, resource.Value)
 
         match result with
         | true -> true
-        | false -> raise (new HttpResponseException(HttpStatusCode.Unauthorized))
+        | false -> raise (new HttpResponseException(if isAuthenticated then HttpStatusCode.Forbidden else HttpStatusCode.Unauthorized))
 
 type ClaimsTransformer() =
     inherit ClaimsAuthenticationManager()

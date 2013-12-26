@@ -1,5 +1,5 @@
 ﻿angular.module('cvbuilder.services')
-    .factory('accountService', ['$http', function ($http) {
+    .factory('accountService', ['$http', 'base64', function ($http, base64) {
     return {
         register: function() {
 
@@ -7,12 +7,13 @@
         login: function (username, password) {
             var config = {
                 headers: {
-                    'Authorization': 'Basic ' + Base64.encode(username + ':' + password),
+                    'Authorization': 'Basic ' + base64.encode(username + ':' + password),
                     'Accept': 'application/json;odata=verbose'
                 }
             };
-            return $http.get('/api/version/token', config)
+            return $http.post('/api/login', config)
                 .then(function (result) {
+                debugger;
                     return result.token;
                 }, function (response) { //error
                     debugger;

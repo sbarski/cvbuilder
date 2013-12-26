@@ -1,4 +1,4 @@
-/*! 2013-12-26 */
+/*! 2013-12-27 */
 "use strict";
 
 angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$locationProvider", function(a, b) {
@@ -23,7 +23,7 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     var b = a("cvbuilder-cache");
     return b;
 } ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "cache", "accountService", function(a, b, c) {
-    c.login("admin", "blah").then(function(a) {
+    c.login("admin", "password").then(function(a) {
         console.log(a);
     }), function() {};
 } ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
@@ -78,22 +78,43 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     return function(b, c) {
         c.text(a);
     };
-} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").factory("accountService", [ "$http", function(a) {
+} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").factory("accountService", [ "$http", "base64", function(a, b) {
     return {
         register: function() {},
-        login: function(b, c) {
-            var d = {
+        login: function(c, d) {
+            var e = {
                 headers: {
-                    Authorization: "Basic " + Base64.encode(b + ":" + c),
+                    Authorization: "Basic " + b.encode(c + ":" + d),
                     Accept: "application/json;odata=verbose"
                 }
             };
-            return a.get("/api/version/token", d).then(function(a) {
+            return a.post("/api/login", e).then(function(a) {
                 return a.token;
             }, function() {});
         }
     };
-} ]), angular.module("cvbuilder.services").factory("versionService", [ "$http", function(a) {
+} ]), angular.module("cvbuilder.services").factory("base64", function() {
+    var a = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    return {
+        encode: function(b) {
+            var c, d, e, f, g, h = "", i = "", j = "", k = 0;
+            do c = b.charCodeAt(k++), d = b.charCodeAt(k++), i = b.charCodeAt(k++), e = c >> 2, 
+            f = (3 & c) << 4 | d >> 4, g = (15 & d) << 2 | i >> 6, j = 63 & i, isNaN(d) ? g = j = 64 : isNaN(i) && (j = 64), 
+            h = h + a.charAt(e) + a.charAt(f) + a.charAt(g) + a.charAt(j), c = d = i = "", e = f = g = j = ""; while (k < b.length);
+            return h;
+        },
+        decode: function(b) {
+            var c, d, e, f, g, h = "", i = "", j = "", k = 0, l = /[^A-Za-z0-9\+\/\=]/g;
+            l.exec(b) && alert("There were invalid base64 characters in the input text.\nValid base64 characters are A-Z, a-z, 0-9, '+', '/',and '='\nExpect errors in decoding."), 
+            b = b.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+            do e = a.indexOf(b.charAt(k++)), f = a.indexOf(b.charAt(k++)), g = a.indexOf(b.charAt(k++)), 
+            j = a.indexOf(b.charAt(k++)), c = e << 2 | f >> 4, d = (15 & f) << 4 | g >> 2, i = (3 & g) << 6 | j, 
+            h += String.fromCharCode(c), 64 != g && (h += String.fromCharCode(d)), 64 != j && (h += String.fromCharCode(i)), 
+            c = d = i = "", e = f = g = j = ""; while (k < b.length);
+            return h;
+        }
+    };
+}), angular.module("cvbuilder.services").factory("versionService", [ "$http", function(a) {
     return {
         getVersion: function() {
             return a.get("/api/version").then(function(a) {

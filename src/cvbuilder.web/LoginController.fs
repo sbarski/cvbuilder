@@ -12,7 +12,8 @@ open HttpClient
 type LoginController() =
     inherit ApiController()
 
-    member x.Post([<FromBody>] username : string, [<FromBody>] password: string) =
+    [<Authorize>]
+    member x.Post() =
         //let authenticationCookie = SecurityService.CreateAuthenticationCookie (Guid.Empty, username, password)
         //let authenticationToken = SecurityService.CreateAuthenticationToken()
         x.Request.CreateResponse(HttpStatusCode.OK, "")
