@@ -1,5 +1,5 @@
 ﻿angular
-    .module('cvbuilder.controllers', [])
+    .module('cvbuilder.controllers')
     .controller('versionController', ['$scope', 'cache', 'versionService', function ($scope, cache, versionService) {
         var cachedVersion = cache.get('version');
         

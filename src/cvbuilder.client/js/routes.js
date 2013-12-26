@@ -1,5 +1,5 @@
-﻿angular.module('cvbuilder.routes', []).config([
-    '$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
+﻿angular.module('cvbuilder.routes', ['ngRoute'])
+    .config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
         $locationProvider.html5Mode(true).hashPrefix('!');
 
         $routeProvider.when('/', {
@@ -10,6 +10,10 @@
             })
             .when('/register', {
                 templateUrl: '/public/views/account/register.html',
+                controller: 'accountController'
+            })
+            .when('/login', {
+                templateUrl: '/public/views/account/login.html',
                 controller: 'accountController'
             })
             .otherwise({

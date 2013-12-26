@@ -1,6 +1,4 @@
-﻿var app = angular.module('cvbuilder.config', []);
-
-app.factory('cache', [
+﻿angular.module('cvbuilder.config', []).factory('cache', [
     '$cacheFactory', function($cacheFactory) {
         var cache = $cacheFactory('cvbuilder-cache');
         return cache;

@@ -1,7 +1,7 @@
-/*! 2013-12-24 */
+/*! 2013-12-26 */
 "use strict";
 
-angular.module("cvbuilder.routes", []).config([ "$routeProvider", "$locationProvider", function(a, b) {
+angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$locationProvider", function(a, b) {
     b.html5Mode(!0).hashPrefix("!"), a.when("/", {
         templateUrl: "/public/views/site/frontpage.html"
     }).when("/about", {
@@ -9,18 +9,20 @@ angular.module("cvbuilder.routes", []).config([ "$routeProvider", "$locationProv
     }).when("/register", {
         templateUrl: "/public/views/account/register.html",
         controller: "accountController"
+    }).when("/login", {
+        templateUrl: "/public/views/account/login.html",
+        controller: "accountController"
     }).otherwise({
         redirectTo: "/"
     });
-} ]);
-
-var app = angular.module("cvbuilder.config", []);
-
-app.factory("cache", [ "$cacheFactory", function(a) {
+} ]), angular.module("cvbuilder.config", []).factory("cache", [ "$cacheFactory", function(a) {
     var b = a("cvbuilder-cache");
     return b;
-} ]), angular.module("cvbuilder.controllers", []).controller("accountController", [ "$scope", "cache", "accountService", function() {} ]), 
-angular.module("cvbuilder.controllers", []).controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
+} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "cache", "accountService", function(a, b, c) {
+    c.login("admin", "blah").then(function(a) {
+        console.log(a);
+    }), function() {};
+} ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
     a.version = null != d ? d : c.getVersion().then(function(c) {
         a.version = c, b.put("version", c);
@@ -33,12 +35,22 @@ angular.module("cvbuilder.controllers", []).controller("versionController", [ "$
     return function(b, c) {
         c.text(a);
     };
-} ]), angular.module("cvbuilder.services", []).factory("accountService", [ "$http", function() {
+} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").factory("accountService", [ "$http", function(a) {
     return {
         register: function() {},
-        login: function() {}
+        login: function(b, c) {
+            var d = {
+                headers: {
+                    Authorization: "Basic " + Base64.encode(b + ":" + c),
+                    Accept: "application/json;odata=verbose"
+                }
+            };
+            return a.get("/api/version/token", d).then(function(a) {
+                return a.token;
+            }, function() {});
+        }
     };
-} ]), angular.module("cvbuilder.services", []).factory("versionService", [ "$http", function(a) {
+} ]), angular.module("cvbuilder.services").factory("versionService", [ "$http", function(a) {
     return {
         getVersion: function() {
             return a.get("/api/version").then(function(a) {
@@ -46,4 +58,4 @@ angular.module("cvbuilder.controllers", []).controller("versionController", [ "$
             }, function() {});
         }
     };
-} ]), angular.module("cvbuilder", [ "ngRoute", "cvbuilder.routes", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.services", "cvbuilder.directives", "cvbuilder.controllers" ]);
+} ]), angular.module("cvbuilder", [ "cvbuilder.routes", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.services", "cvbuilder.directives", "cvbuilder.controllers", "ngRoute" ]);

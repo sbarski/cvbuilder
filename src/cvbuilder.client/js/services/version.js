@@ -1,4 +1,5 @@
-﻿angular.module('cvbuilder.services', []).factory('versionService', ['$http', function ($http) {
+﻿angular.module('cvbuilder.services')
+    .factory('versionService', ['$http', function ($http) {
         return {
             getVersion: function() {
                 return $http.get('/api/version')
