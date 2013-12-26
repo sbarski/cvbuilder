@@ -12,6 +12,10 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     }).when("/login", {
         templateUrl: "/public/views/account/login.html",
         controller: "accountController"
+    }).when("/status/:code", {
+        templateUrl: function(a) {
+            return "/public/views/status/" + a.code + ".html";
+        }
     }).otherwise({
         redirectTo: "/"
     });
@@ -27,11 +31,50 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     a.version = null != d ? d : c.getVersion().then(function(c) {
         a.version = c, b.put("version", c);
     });
-} ]), angular.module("cvbuilder.filters", []).filter("interpolate", [ "version", function(a) {
+} ]), angular.module("cvbuilder.interceptors", []), angular.module("cvbuilder.interceptors").config([ "$provide", "$httpProvider", function(a, b) {
+    // Intercept http calls.
+    a.factory("HttpInterceptor", [ "$q", "$location", function(a, b) {
+        return {
+            // On request success
+            request: function(b) {
+                // Return the config or wrap it in a promise if blank.
+                return b || a.when(b);
+            },
+            // On request failure
+            requestError: function(b) {
+                // Return the promise rejection.
+                return a.reject(b);
+            },
+            // On response success
+            response: function(b) {
+                // Return the response or promise.
+                return b || a.when(b);
+            },
+            // On response failture
+            responseError: function(c) {
+                switch (c.status) {
+                  case 401:
+                    b.path("/status/401");
+                    break;
+
+                  case 403:
+                    b.path("/status/403");
+                    break;
+
+                  case 404:
+                    b.path("/status/404");
+                }
+                // Return the promise rejection.
+                return a.reject(c);
+            }
+        };
+    } ]), // Add the interceptor to the $httpProvider.
+    b.interceptors.push("HttpInterceptor");
+} ]), angular.module("cvbuilder.filters", []), angular.module("cvbuilder.filters").filter("interpolate", [ "version", function(a) {
     return function(b) {
         return String(b).replace(/\%VERSION\%/gm, a);
     };
-} ]), angular.module("cvbuilder.directives", []).directive("appVersion", [ "version", function(a) {
+} ]), angular.module("cvbuilder.directives", []), angular.module("cvbuilder.directives").directive("appVersion", [ "version", function(a) {
     return function(b, c) {
         c.text(a);
     };
@@ -58,4 +101,5 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             }, function() {});
         }
     };
-} ]), angular.module("cvbuilder", [ "cvbuilder.routes", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.services", "cvbuilder.directives", "cvbuilder.controllers", "ngRoute" ]);
+} ]), // Declare app level module which depends on filters, and services
+angular.module("cvbuilder", [ "cvbuilder.routes", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.services", "cvbuilder.directives", "cvbuilder.interceptors", "cvbuilder.controllers", "ngRoute" ]);

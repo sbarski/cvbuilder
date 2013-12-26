@@ -16,6 +16,11 @@
                 templateUrl: '/public/views/account/login.html',
                 controller: 'accountController'
             })
+            .when('/status/:code', {
+                templateUrl: function(routeParameters) {
+                    return '/public/views/status/' + routeParameters.code + ".html";
+                } 
+            })
             .otherwise({
                 redirectTo: '/'
             });

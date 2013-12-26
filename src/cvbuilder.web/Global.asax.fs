@@ -31,7 +31,7 @@ type Global() =
         let auth = new AuthenticationConfiguration()
         auth.RequireSsl <- false
         auth.EnableSessionToken <- true
-        auth.SendWwwAuthenticateResponseHeaders <- true
+        auth.SendWwwAuthenticateResponseHeaders <- false
         auth.ClaimsAuthenticationManager <- new ClaimsTransformer()
         auth.SessionToken.EndpointAddress <- "/api/authenticate"
         auth.AddBasicAuthentication(fun username password -> if username = "admin" && password = "password" then true else false)

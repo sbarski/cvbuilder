@@ -7,6 +7,7 @@ angular.module('cvbuilder', [
     'cvbuilder.filters',
     'cvbuilder.services',
     'cvbuilder.directives',
+    'cvbuilder.interceptors',
     'cvbuilder.controllers',
     'ngRoute'
 ]);
