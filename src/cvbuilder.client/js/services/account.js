@@ -1,26 +1,34 @@
 ﻿angular.module('cvbuilder.services')
-    .factory('accountService', ['$http', 'base64', 'userService', function ($http, base64, userService) {
-    return {
-        register: function() {
+    .factory('accountService', ['$http', 'base64', function ($http, base64) {
+        var user = {
+            IsAuthenticated: false,
+            Username: '',
+            Token: '',
+            TokenExpiry: ''
+        };
 
-        },
-        login: function (username, password) {
-            $http.defaults.headers.common['Authorization'] = 'Basic ' + base64.encode(username + ':' + password); //will only be present in this scope
-            return $http.post('/api/authenticate')
-                .then(function (result) {
-                    //make sure that all future requests are done with the Session token
-                    userService.IsAuthenticated = result.data['access_token'] != null;
-                    userService.Token = result.data['access_token'];
-                    userService.TokenExpiry = result.data['expires_in'];
+        return {
+            user: user,
+            register: function() {
 
-                    if (userService.IsAuthenticated) {
-                        $http.defaults.headers.common['Authorization'] = 'Session ' + userService.Token; //will only be present in this scope
-                    }
+            },
+            login: function (username, password) {
+                $http.defaults.headers.common['Authorization'] = 'Basic ' + base64.encode(username + ':' + password); //will only be present in this scope
+                return $http.post('/api/authenticate')
+                    .then(function (result) {
+                        //make sure that all future requests are done with the Session token
+                        user.IsAuthenticated = result.data['access_token'] != null;
+                        user.Token = result.data['access_token'];
+                        user.TokenExpiry = result.data['expires_in'];
 
-                    return userService.IsAuthenticated;
-            }, function (response) { //error
-                    debugger;
-                });
-        }
-    };
+                        if (user.IsAuthenticated) {
+                            $http.defaults.headers.common['Authorization'] = 'Session ' + user.Token; //will only be present in this scope
+                        }
+
+                        return user.IsAuthenticated;
+                }, function (response) { //error
+                        debugger;
+                    });
+            }
+        };
 }]);

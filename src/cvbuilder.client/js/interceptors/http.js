@@ -2,7 +2,7 @@
 .config(["$provide", "$httpProvider", function ($provide, $httpProvider) {
 
     // Intercept http calls.
-    $provide.factory('HttpInterceptor', ["$q", "$location", "userService", function ($q, $location, userService) {
+    $provide.factory('HttpInterceptor', ["$q", "$location", function ($q, $location) {
         return {
             // On request success
             request: function (config) {
