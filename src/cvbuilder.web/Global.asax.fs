@@ -30,7 +30,7 @@ type Global() =
             true
         else
             raise (new AuthenticationException())
-    
+
     member this.ConfigureAuthentication (config: HttpConfiguration) =
         let sessionTokenConfiguration = new SessionTokenConfiguration()
         sessionTokenConfiguration.EndpointAddress <- "/api/authenticate"
@@ -54,7 +54,7 @@ type Global() =
 
         let tokenMapping = new AuthenticationOptionMapping()
         tokenMapping.Options <- AuthenticationOptions.ForAuthorizationHeader("Session")
-        tokenMapping.Scheme <- AuthenticationScheme.SchemeOnly("Session")
+        tokenMapping.TokenHandler <- System.IdentityModel.Tokens.SecurityTokenHandlerCollection.CreateDefaultSecurityTokenHandlerCollection()
         auth.AddMapping(tokenMapping)
         
         config.MessageHandlers.Add(new AuthenticationHandler(auth)) 

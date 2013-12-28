@@ -8,11 +8,14 @@
             $http.defaults.headers.common['Authorization'] = 'Basic ' + base64.encode(username + ':' + password); //will only be present in this scope
             return $http.post('/api/authenticate')
                 .then(function (result) {
-
                     //make sure that all future requests are done with the Session token
                     userService.IsAuthenticated = result.data['access_token'] != null;
                     userService.Token = result.data['access_token'];
                     userService.TokenExpiry = result.data['expires_in'];
+
+                    if (userService.IsAuthenticated) {
+                        $http.defaults.headers.common['Authorization'] = 'Session ' + userService.Token; //will only be present in this scope
+                    }
 
                     return userService.IsAuthenticated;
             }, function (response) { //error

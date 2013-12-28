@@ -6,9 +6,9 @@
         return {
             // On request success
             request: function (config) {
-                if (userService != null && userService.token != null && userService.IsAuthenticated) {
-                    config.headers["Authorization"] = 'Session ' + userService.Token;
-                }
+                //if (userService != null && userService.token != null && userService.IsAuthenticated) {
+                //    config.headers["Authorization"] = 'Session ' + userService.Token;
+                //}
 
                 return config || $q.when(config);
             },

@@ -1,4 +1,4 @@
-/*! 2013-12-27 */
+/*! 2013-12-28 */
 "use strict";
 
 angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$locationProvider", function(a, b) {
@@ -31,12 +31,14 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     });
 } ]), angular.module("cvbuilder.interceptors", []), angular.module("cvbuilder.interceptors").config([ "$provide", "$httpProvider", function(a, b) {
     // Intercept http calls.
-    a.factory("HttpInterceptor", [ "$q", "$location", "userService", function(a, b, c) {
+    a.factory("HttpInterceptor", [ "$q", "$location", "userService", function(a, b) {
         return {
             // On request success
             request: function(b) {
-                return null != c && null != c.token && c.IsAuthenticated && (b.headers.Authorization = "Session " + c.Token), 
-                b || a.when(b);
+                //if (userService != null && userService.token != null && userService.IsAuthenticated) {
+                //    config.headers["Authorization"] = 'Session ' + userService.Token;
+                //}
+                return b || a.when(b);
             },
             // On request failure
             requestError: function(b) {
@@ -82,10 +84,11 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         login: function(d, e) {
             //will only be present in this scope
             return a.defaults.headers.common.Authorization = "Basic " + b.encode(d + ":" + e), 
-            a.post("/api/authenticate").then(function(a) {
+            a.post("/api/authenticate").then(function(b) {
                 //make sure that all future requests are done with the Session token
-                return c.IsAuthenticated = null != a.data.access_token, c.Token = a.data.access_token, 
-                c.TokenExpiry = a.data.expires_in, c.IsAuthenticated;
+                return c.IsAuthenticated = null != b.data.access_token, c.Token = b.data.access_token, 
+                c.TokenExpiry = b.data.expires_in, c.IsAuthenticated && (a.defaults.headers.common.Authorization = "Session " + c.Token), 
+                c.IsAuthenticated;
             }, function() {});
         }
     };
