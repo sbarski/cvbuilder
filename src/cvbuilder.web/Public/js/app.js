@@ -3,9 +3,9 @@
 
 angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$locationProvider", function(a, b) {
     b.html5Mode(!0).hashPrefix("!"), a.when("/", {
-        templateUrl: "/public/views/site/frontpage.html"
+        templateUrl: "/public/views/home/frontpage.html"
     }).when("/about", {
-        templateUrl: "/public/views/site/about.html"
+        templateUrl: "/public/views/home/about.html"
     }).when("/register", {
         templateUrl: "/public/views/account/register.html",
         controller: "accountController"
@@ -16,15 +16,21 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         templateUrl: function(a) {
             return "/public/views/status/" + a.code + ".html";
         }
+    }).when("/dashboard", {
+        templateUrl: "/public/views/protected/dashboard.html"
     }).otherwise({
         redirectTo: "/"
     });
 } ]), angular.module("cvbuilder.config", []).factory("cache", [ "$cacheFactory", function(a) {
     var b = a("cvbuilder-cache");
     return b;
-} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "cache", "accountService", function(a, b, c) {
+} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "$location", "cache", "accountService", function(a, b, c, d) {
     a.login = function(a) {
-        c.login(a.username, a.password).then(function() {}), function() {};
+        d.login(a.username, a.password).then(function(a) {
+            a && b.path("/dashboard");
+        }), function(a) {
+            401 === a.status && (a.status = 200);
+        };
     };
 } ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
@@ -55,10 +61,6 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             // On response failture
             responseError: function(c) {
                 switch (c.status) {
-                  case 401:
-                    b.path("/status/401");
-                    break;
-
                   case 403:
                     b.path("/status/403");
                     break;
@@ -80,25 +82,38 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     return function(b, c) {
         c.text(a);
     };
-} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").factory("accountService", [ "$http", "base64", function(a, b) {
-    var c = {
+} ]), angular.module("cvbuilder.directives").directive("message", [ "messageService", function(a) {
+    return {
+        restrict: "E",
+        controller: [ "$rootScope", "$scope", function(b, c) {
+            c.$on("handleMessageBroadcast", function() {
+                b.messages = a.getItems();
+            });
+        } ],
+        replace: !0,
+        template: '<div ng-repeat="item in messages">{{item.content}}</div>'
+    };
+} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").factory("accountService", [ "$http", "$location", "base64", "messageService", function(a, b, c, d) {
+    var e = {
         IsAuthenticated: !1,
         Username: "",
         Token: "",
         TokenExpiry: ""
     };
     return {
-        user: c,
+        user: e,
         register: function() {},
-        login: function(d, e) {
-            //will only be present in this scope
-            return a.defaults.headers.common.Authorization = "Basic " + b.encode(d + ":" + e), 
+        login: function(b, f) {
+            return a.defaults.headers.common.Authorization = "Basic " + c.encode(b + ":" + f), 
             a.post("/api/authenticate").then(function(b) {
                 //make sure that all future requests are done with the Session token
-                return c.IsAuthenticated = null != b.data.access_token, c.Token = b.data.access_token, 
-                c.TokenExpiry = b.data.expires_in, c.IsAuthenticated && (a.defaults.headers.common.Authorization = "Session " + c.Token), 
-                c.IsAuthenticated;
-            }, function() {});
+                return e.IsAuthenticated = null != b.data.access_token, e.Token = b.data.access_token, 
+                e.TokenExpiry = b.data.expires_in, e.IsAuthenticated && (a.defaults.headers.common.Authorization = "Session " + e.Token), 
+                e.IsAuthenticated;
+            }, function(a) {
+                //error
+                401 === a.status && d.add("Hello World");
+            });
         }
     };
 } ]), angular.module("cvbuilder.services").factory("base64", function() {
@@ -122,7 +137,25 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             return h;
         }
     };
-}), angular.module("cvbuilder.services").factory("versionService", [ "$http", function(a) {
+}), angular.module("cvbuilder.services").factory("messageService", [ "$rootScope", function(a) {
+    var b = [];
+    return {
+        add: function(c, d, e, f) {
+            b.push({
+                content: c,
+                title: d,
+                type: e,
+                preserve: f
+            }), a.$broadcast("handleMessageBroadcast");
+        },
+        getItems: function() {
+            return b.slice();
+        },
+        clear: function() {
+            b = [], a.$broadcast("handleMessageBroadcast");
+        }
+    };
+} ]), angular.module("cvbuilder.services").factory("versionService", [ "$http", function(a) {
     return {
         getVersion: function() {
             return a.get("/api/version").then(function(a) {

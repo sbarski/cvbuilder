@@ -1,5 +1,5 @@
 ﻿angular.module('cvbuilder.services')
-    .factory('accountService', ['$http', 'base64', function ($http, base64) {
+    .factory('accountService', ['$http', '$location', 'base64', 'messageService', function ($http, $location, base64, messageService) {
         var user = {
             IsAuthenticated: false,
             Username: '',
@@ -10,10 +10,9 @@
         return {
             user: user,
             register: function() {
-
             },
             login: function (username, password) {
-                $http.defaults.headers.common['Authorization'] = 'Basic ' + base64.encode(username + ':' + password); //will only be present in this scope
+                $http.defaults.headers.common['Authorization'] = 'Basic ' + base64.encode(username + ':' + password);
                 return $http.post('/api/authenticate')
                     .then(function (result) {
                         //make sure that all future requests are done with the Session token
@@ -22,13 +21,15 @@
                         user.TokenExpiry = result.data['expires_in'];
 
                         if (user.IsAuthenticated) {
-                            $http.defaults.headers.common['Authorization'] = 'Session ' + user.Token; //will only be present in this scope
+                            $http.defaults.headers.common['Authorization'] = 'Session ' + user.Token; 
                         }
 
                         return user.IsAuthenticated;
                 }, function (response) { //error
-                        debugger;
-                    });
+                    if (response.status === 401) {
+                        messageService.add('Hello World');
+                    }
+                });
             }
         };
 }]);

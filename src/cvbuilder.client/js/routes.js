@@ -3,10 +3,10 @@
         $locationProvider.html5Mode(true).hashPrefix('!');
 
         $routeProvider.when('/', {
-                templateUrl: '/public/views/site/frontpage.html'
+                templateUrl: '/public/views/home/frontpage.html'
             })
             .when('/about', {
-                templateUrl: '/public/views/site/about.html'
+                templateUrl: '/public/views/home/about.html'
             })
             .when('/register', {
                 templateUrl: '/public/views/account/register.html',
@@ -20,6 +20,9 @@
                 templateUrl: function(routeParameters) {
                     return '/public/views/status/' + routeParameters.code + ".html";
                 } 
+            })
+            .when('/dashboard', {
+               templateUrl: '/public/views/protected/dashboard.html' 
             })
             .otherwise({
                 redirectTo: '/'
