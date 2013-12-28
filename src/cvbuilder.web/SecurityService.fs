@@ -27,7 +27,7 @@ type ClaimsTransformer() =
     inherit ClaimsAuthenticationManager()
 
     member this.AddClaims(claim: ClaimsIdentity) =
-        claim.AddClaim(new Claim("read", "version"))
+        claim.AddClaim(new Claim("access", "dashboard"))
 
     member this.AddClaims(principal: ClaimsPrincipal) = 
         this.AddClaims (Seq.head principal.Identities)

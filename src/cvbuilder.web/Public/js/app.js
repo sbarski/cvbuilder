@@ -28,9 +28,7 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     a.login = function(a) {
         d.login(a.username, a.password).then(function(a) {
             a && b.path("/dashboard");
-        }), function(a) {
-            401 === a.status && (a.status = 200);
-        };
+        }), function() {};
     };
 } ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
@@ -93,23 +91,43 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         replace: !0,
         template: '<div ng-repeat="item in messages">{{item.content}}</div>'
     };
+} ]), angular.module("cvbuilder.directives").directive("user", [ "accountService", function(a) {
+    return {
+        restrict: "AE",
+        scope: {
+            ngModel: "="
+        },
+        controller: [ "$scope", function(b) {
+            b.user = a.user, console.log(b.user);
+        } ],
+        replace: !0,
+        templateUrl: "/public/views/protected/partials/user.html"
+    };
 } ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").factory("accountService", [ "$http", "$location", "base64", "messageService", function(a, b, c, d) {
     var e = {
         IsAuthenticated: !1,
         Username: "",
         Token: "",
-        TokenExpiry: ""
+        TokenExpiry: "",
+        FullName: "",
+        Photo: ""
+    }, f = function() {
+        return a.get("/api/account").then(function(a) {
+            e.FullName = a.data.name, e.Photo = a.data.photo;
+        }), function(a) {
+            d.add(a.status);
+        };
     };
     return {
         user: e,
         register: function() {},
-        login: function(b, f) {
-            return a.defaults.headers.common.Authorization = "Basic " + c.encode(b + ":" + f), 
+        login: function(b, g) {
+            return a.defaults.headers.common.Authorization = "Basic " + c.encode(b + ":" + g), 
             a.post("/api/authenticate").then(function(b) {
                 //make sure that all future requests are done with the Session token
-                return e.IsAuthenticated = null != b.data.access_token, e.Token = b.data.access_token, 
-                e.TokenExpiry = b.data.expires_in, e.IsAuthenticated && (a.defaults.headers.common.Authorization = "Session " + e.Token), 
-                e.IsAuthenticated;
+                return e.IsAuthenticated = null != b.data.access_token, e.IsAuthenticated && (e.Token = b.data.access_token, 
+                e.TokenExpiry = b.data.expires_in, a.defaults.headers.common.Authorization = "Session " + e.Token, 
+                e.FullName = "MEMEME", f()), e.IsAuthenticated;
             }, function(a) {
                 //error
                 401 === a.status && d.add("Hello World");

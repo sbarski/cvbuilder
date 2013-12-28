@@ -9,9 +9,6 @@
                     }
                 }),
             function(response) {
-                if (response.status === 401) {
-                    response.status = 200;
-                }
             };
     };
 }]);

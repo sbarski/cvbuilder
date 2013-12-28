@@ -100,7 +100,7 @@
     <Compile Include="DomainTypes.fs" />
     <Compile Include="UserService.fs" />
     <Compile Include="HomeController.fs" />
-    <Compile Include="LoginController.fs" />
+    <Compile Include="AccountController.fs" />
     <Compile Include="VersionController.fs" />
   </ItemGroup>
   <ItemGroup>

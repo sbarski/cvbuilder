@@ -19,6 +19,8 @@ type Global() =
     inherit System.Web.HttpApplication()
 
     member this.RegisterWebApi(config: HttpConfiguration) =
+        config.Formatters.JsonFormatter.SerializerSettings.ContractResolver <- Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+
         config.MapHttpAttributeRoutes()
         config.Routes.MapHttpRoute(
             "DefaultApi", 
