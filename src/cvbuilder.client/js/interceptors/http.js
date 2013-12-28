@@ -2,11 +2,14 @@
 .config(["$provide", "$httpProvider", function ($provide, $httpProvider) {
 
     // Intercept http calls.
-    $provide.factory('HttpInterceptor', ["$q", "$location", function ($q, $location) {
+    $provide.factory('HttpInterceptor', ["$q", "$location", "userService", function ($q, $location, userService) {
         return {
             // On request success
             request: function (config) {
-                // Return the config or wrap it in a promise if blank.
+                if (userService != null && userService.token != null && userService.IsAuthenticated) {
+                    config.headers["Authorization"] = 'Session ' + userService.Token;
+                }
+
                 return config || $q.when(config);
             },
 

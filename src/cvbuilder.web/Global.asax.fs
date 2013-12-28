@@ -26,22 +26,37 @@ type Global() =
             { Controller = "Home"; Id = RouteParameter.Optional}) |> ignore
 
     member this.ValidateUser(username: string, password: string) =
-        if username = "admin" && password = "password" then
+        if username = "admin" && password = "admin" then
             true
         else
             raise (new AuthenticationException())
     
     member this.ConfigureAuthentication (config: HttpConfiguration) =
-        let mapping = new AuthenticationOptionMapping()
+        let sessionTokenConfiguration = new SessionTokenConfiguration()
+        sessionTokenConfiguration.EndpointAddress <- "/api/authenticate"
 
         let auth = new AuthenticationConfiguration()
         auth.RequireSsl <- false
         auth.EnableSessionToken <- true
         auth.SendWwwAuthenticateResponseHeaders <- false
+        auth.SessionToken <- sessionTokenConfiguration
         auth.ClaimsAuthenticationManager <- new ClaimsTransformer()
-        auth.SessionToken.EndpointAddress <- "/api/authenticate"
-        auth.AddBasicAuthentication(fun username password -> this.ValidateUser(username, password))
+        
+        let securityTokenHandler = new Thinktecture.IdentityModel.Tokens.Http.BasicAuthenticationSecurityTokenHandler(fun username password -> this.ValidateUser(username, password))
+        securityTokenHandler.RetainPassword <- false
 
+        let authorizationMapping = new AuthenticationOptionMapping()
+        authorizationMapping.Options <- AuthenticationOptions.ForAuthorizationHeader("Basic")
+        authorizationMapping.TokenHandler <- new System.IdentityModel.Tokens.SecurityTokenHandlerCollection()
+        authorizationMapping.TokenHandler.Add(securityTokenHandler)
+        authorizationMapping.Scheme <- AuthenticationScheme.SchemeOnly("Basic")
+        auth.AddMapping(authorizationMapping)
+
+        let tokenMapping = new AuthenticationOptionMapping()
+        tokenMapping.Options <- AuthenticationOptions.ForAuthorizationHeader("Session")
+        tokenMapping.Scheme <- AuthenticationScheme.SchemeOnly("Session")
+        auth.AddMapping(tokenMapping)
+        
         config.MessageHandlers.Add(new AuthenticationHandler(auth)) 
 
     member this.Application_Start (sender: obj) (e: EventArgs) =

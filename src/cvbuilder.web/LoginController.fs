@@ -14,6 +14,6 @@ type LoginController() =
 
     [<Authorize>]
     member x.Post() =
-        //let authenticationCookie = SecurityService.CreateAuthenticationCookie (Guid.Empty, username, password)
-        //let authenticationToken = SecurityService.CreateAuthenticationToken()
-        x.Request.CreateResponse(HttpStatusCode.OK, "")
+        let m = "hello"
+        
+        x.Request.CreateResponse(HttpStatusCode.Accepted, "")

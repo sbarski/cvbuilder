@@ -22,10 +22,8 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
 } ]), angular.module("cvbuilder.config", []).factory("cache", [ "$cacheFactory", function(a) {
     var b = a("cvbuilder-cache");
     return b;
-} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "cache", "accountService", function(a, b, c) {
-    c.login("admin", "password").then(function(a) {
-        console.log(a);
-    }), function() {};
+} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "cache", "accountService", "userService", function(a, b, c) {
+    c.login("admin", "admin").then(function() {}), function() {};
 } ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
     a.version = null != d ? d : c.getVersion().then(function(c) {
@@ -33,12 +31,12 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     });
 } ]), angular.module("cvbuilder.interceptors", []), angular.module("cvbuilder.interceptors").config([ "$provide", "$httpProvider", function(a, b) {
     // Intercept http calls.
-    a.factory("HttpInterceptor", [ "$q", "$location", function(a, b) {
+    a.factory("HttpInterceptor", [ "$q", "$location", "userService", function(a, b, c) {
         return {
             // On request success
             request: function(b) {
-                // Return the config or wrap it in a promise if blank.
-                return b || a.when(b);
+                return null != c && null != c.token && c.IsAuthenticated && (b.headers.Authorization = "Session " + c.Token), 
+                b || a.when(b);
             },
             // On request failure
             requestError: function(b) {
@@ -78,18 +76,16 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     return function(b, c) {
         c.text(a);
     };
-} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").factory("accountService", [ "$http", "base64", function(a, b) {
+} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").factory("accountService", [ "$http", "base64", "userService", function(a, b, c) {
     return {
         register: function() {},
-        login: function(c, d) {
-            var e = {
-                headers: {
-                    Authorization: "Basic " + b.encode(c + ":" + d),
-                    Accept: "application/json;odata=verbose"
-                }
-            };
-            return a.post("/api/login", e).then(function(a) {
-                return a.token;
+        login: function(d, e) {
+            //will only be present in this scope
+            return a.defaults.headers.common.Authorization = "Basic " + b.encode(d + ":" + e), 
+            a.post("/api/authenticate").then(function(a) {
+                //make sure that all future requests are done with the Session token
+                return c.IsAuthenticated = null != a.data.access_token, c.Token = a.data.access_token, 
+                c.TokenExpiry = a.data.expires_in, c.IsAuthenticated;
             }, function() {});
         }
     };
@@ -114,7 +110,15 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             return h;
         }
     };
-}), angular.module("cvbuilder.services").factory("versionService", [ "$http", function(a) {
+}), angular.module("cvbuilder.services").factory("userService", [ function() {
+    var a = {
+        IsAuthenticated: !1,
+        Username: "",
+        Token: "",
+        TokenExpiry: ""
+    };
+    return a;
+} ]), angular.module("cvbuilder.services").factory("versionService", [ "$http", function(a) {
     return {
         getVersion: function() {
             return a.get("/api/version").then(function(a) {

@@ -1,21 +1,21 @@
 ﻿angular.module('cvbuilder.services')
-    .factory('accountService', ['$http', 'base64', function ($http, base64) {
+    .factory('accountService', ['$http', 'base64', 'userService', function ($http, base64, userService) {
     return {
         register: function() {
 
         },
         login: function (username, password) {
-            var config = {
-                headers: {
-                    'Authorization': 'Basic ' + base64.encode(username + ':' + password),
-                    'Accept': 'application/json;odata=verbose'
-                }
-            };
-            return $http.post('/api/login', config)
+            $http.defaults.headers.common['Authorization'] = 'Basic ' + base64.encode(username + ':' + password); //will only be present in this scope
+            return $http.post('/api/authenticate')
                 .then(function (result) {
-                debugger;
-                    return result.token;
-                }, function (response) { //error
+
+                    //make sure that all future requests are done with the Session token
+                    userService.IsAuthenticated = result.data['access_token'] != null;
+                    userService.Token = result.data['access_token'];
+                    userService.TokenExpiry = result.data['expires_in'];
+
+                    return userService.IsAuthenticated;
+            }, function (response) { //error
                     debugger;
                 });
         }
