@@ -8,9 +8,11 @@ open System.Net.Http
 open System.Configuration
 open HttpClient
 open Newtonsoft.Json
+open Thinktecture.IdentityModel.Authorization.WebApi
 
 type User = {
-    name: string;
+    first_name: string;
+    last_name: string;
     photo: string;
 }
 
@@ -20,5 +22,5 @@ type AccountController() =
 
     [<Authorize>]
     member x.Get() =
-        let user = {name = "Peter Sbarski"; photo = "Photo"}
+        let user = {first_name = "Peter"; last_name="Sbarski"; photo = "Photo"}
         x.Request.CreateResponse(HttpStatusCode.Accepted, user)

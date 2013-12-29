@@ -1,14 +1,17 @@
 ﻿angular
     .module('cvbuilder.controllers')
-    .controller('accountController', ['$scope', "$location", 'cache', 'accountService', function ($scope, $location, cache, accountService) {
+    .controller('accountController', ['$scope', "$location", 'cache', 'messageService', 'accountService', function ($scope, $location, cache, messageService, accountService) {
     $scope.login = function(user) {
-        accountService.login(user.username, user.password)
-                .then(function(isAuthenticated) {
-                    if (isAuthenticated) {
+        accountService
+            .login(user.username, user.password)
+            .then(function (authenticatedUser) { //authenticate 
+                    if (authenticatedUser && authenticatedUser.is_authenticated) {
                         $location.path('/dashboard');
+                    } else {
+                        messageService.add('Could not login and authenticate');
                     }
-                }),
-            function(response) {
-            };
+                }, function (error) { //error
+
+                });
     };
 }]);

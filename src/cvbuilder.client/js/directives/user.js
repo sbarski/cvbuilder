@@ -6,10 +6,9 @@ angular.module('cvbuilder.directives').
           ngModel: '='  
         },
         controller: ['$scope', function ($scope) {
-            $scope.user = accountService.user;
-            console.log($scope.user);
+            $scope.user = accountService.user.details;
         }],
         replace: true,
-        templateUrl: '/public/views/protected/partials/user.html' //working
+        templateUrl: '/public/views/protected/partials/user.html' 
     };
 }]);

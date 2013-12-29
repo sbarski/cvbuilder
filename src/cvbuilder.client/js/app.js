@@ -9,6 +9,7 @@ angular.module('cvbuilder', [
     'cvbuilder.directives',
     'cvbuilder.interceptors',
     'cvbuilder.controllers',
-    'ngRoute'
+    'ngRoute',
+    'ngCookies'
 ]);
 

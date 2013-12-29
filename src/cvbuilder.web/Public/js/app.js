@@ -1,4 +1,4 @@
-/*! 2013-12-28 */
+/*! 2013-12-29 */
 "use strict";
 
 angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$locationProvider", function(a, b) {
@@ -24,11 +24,12 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
 } ]), angular.module("cvbuilder.config", []).factory("cache", [ "$cacheFactory", function(a) {
     var b = a("cvbuilder-cache");
     return b;
-} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "$location", "cache", "accountService", function(a, b, c, d) {
+} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
     a.login = function(a) {
-        d.login(a.username, a.password).then(function(a) {
-            a && b.path("/dashboard");
-        }), function() {};
+        e.login(a.username, a.password).then(function(a) {
+            //authenticate 
+            a && a.is_authenticated ? b.path("/dashboard") : d.add("Could not login and authenticate");
+        }, function() {});
     };
 } ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
@@ -98,39 +99,42 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             ngModel: "="
         },
         controller: [ "$scope", function(b) {
-            b.user = a.user, console.log(b.user);
+            b.user = a.user.details;
         } ],
         replace: !0,
         templateUrl: "/public/views/protected/partials/user.html"
     };
-} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").factory("accountService", [ "$http", "$location", "base64", "messageService", function(a, b, c, d) {
-    var e = {
-        IsAuthenticated: !1,
-        Username: "",
-        Token: "",
-        TokenExpiry: "",
-        FullName: "",
-        Photo: ""
-    }, f = function() {
-        return a.get("/api/account").then(function(a) {
-            e.FullName = a.data.name, e.Photo = a.data.photo;
-        }), function(a) {
-            d.add(a.status);
-        };
+} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").factory("accountService", [ "$http", "$location", "$q", "base64", "messageService", function(a, b, c, d, e) {
+    var f = {
+        is_authenticated: !1,
+        username: "",
+        token: "",
+        token_expiry: "",
+        details: {
+            first_name: "",
+            last_name: "",
+            photo: ""
+        }
+    }, g = function(b) {
+        return f.is_authenticated = null != b.data.access_token, f.is_authenticated ? (f.token = b.data.access_token, 
+        f.token_expiry = b.data.expires_in, a.defaults.headers.common.Authorization = "Session " + f.token) : c.reject("An error occurrred during authentication"), 
+        f;
     };
     return {
-        user: e,
+        user: f,
         register: function() {},
-        login: function(b, g) {
-            return a.defaults.headers.common.Authorization = "Basic " + c.encode(b + ":" + g), 
-            a.post("/api/authenticate").then(function(b) {
-                //make sure that all future requests are done with the Session token
-                return e.IsAuthenticated = null != b.data.access_token, e.IsAuthenticated && (e.Token = b.data.access_token, 
-                e.TokenExpiry = b.data.expires_in, a.defaults.headers.common.Authorization = "Session " + e.Token, 
-                e.FullName = "MEMEME", f()), e.IsAuthenticated;
+        login: function(b, c) {
+            return a.defaults.headers.common.Authorization = "Basic " + d.encode(b + ":" + c), 
+            a.post("/api/authenticate").then(function(a) {
+                return g(a);
+            }).then(function() {
+                return a.get("/api/account");
+            }).then(function(a) {
+                return f.details.first_name = a.data.first_name, //process user information
+                f.details.last_name = a.data.last_name, f.details.photo = a.data.photo, f;
             }, function(a) {
                 //error
-                401 === a.status && d.add("Hello World");
+                401 === a.status && e.add("Unauthorized Login");
             });
         }
     };
@@ -182,4 +186,4 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         }
     };
 } ]), // Declare app level module which depends on filters, and services
-angular.module("cvbuilder", [ "cvbuilder.routes", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.services", "cvbuilder.directives", "cvbuilder.interceptors", "cvbuilder.controllers", "ngRoute" ]);
+angular.module("cvbuilder", [ "cvbuilder.routes", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.services", "cvbuilder.directives", "cvbuilder.interceptors", "cvbuilder.controllers", "ngRoute", "ngCookies" ]);
