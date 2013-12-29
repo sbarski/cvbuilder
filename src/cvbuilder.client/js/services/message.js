@@ -1,20 +1,42 @@
 ﻿angular.module('cvbuilder.services')
     .factory('messageService', ['$rootScope', function ($rootScope) {
-        var messageService = [];
+        $rootScope.messages = [];
+
+        var onChange = function (event, newUrl, oldUrl) {
+            var messages = [];
+
+            _.each($rootScope.messages, function (item) {
+                if (item.preserve) {
+                    item.preserve = false;
+                    messages.push(item);
+                }
+            });
+
+            $rootScope.messages = messages;
+        };
+
+        $rootScope.$on('stateChange', onChange);
+        $rootScope.$on('$locationChangeSuccess', onChange);
 
         return {
-            add: function(content, title, type, preserve) {
-                messageService.push({ content: content, title: title, type: type, preserve: preserve });
+            addMessage: function(content, title, type, preserve) {
+                $rootScope.messages.push({ content: content, title: title, type: type, preserve: preserve });
 
                 $rootScope.$broadcast('handleMessageBroadcast');
             },
 
-            getItems: function () {
-                return messageService.slice(); //return a copy of the array thus making it immutable
+            addAlert: function(content, preserve) {
+                $rootScope.messages.push({ content: content, preserve: preserve });
+
+                $rootScope.$broadcast('handleMessageBroadcast');
+            },
+
+            messageTypes: function() {
+                return [ "Alert", "Information" ];
             },
 
             clear: function() {
-                messageService = [];
+                $rootScope.messages = [];
 
                 $rootScope.$broadcast('handleMessageBroadcast');
             },

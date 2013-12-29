@@ -8,7 +8,8 @@
             details: {
                 first_name: '',
                 last_name: '',
-                photo: ''
+                photo: '',
+                claims: []
             }
         };
 
@@ -41,10 +42,11 @@
                         user.details.first_name = result.data['first_name']; //process user information
                         user.details.last_name = result.data['last_name'];
                         user.details.photo = result.data['photo'];
+                        user.details.claims = result.data['claims'];
                         return user;
                 }, function (error) { //error
                         if (error.status === 401) {
-                            messageService.add('Unauthorized Login');
+                            messageService.addAlert('Unauthorized Login', false);
                         }
                 });
             }

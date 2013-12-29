@@ -15,21 +15,52 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     }).when("/status/:code", {
         templateUrl: function(a) {
             return "/public/views/status/" + a.code + ".html";
+        },
+        data: {
+            authenticated: !0
         }
     }).when("/dashboard", {
-        templateUrl: "/public/views/protected/dashboard.html"
+        templateUrl: "/public/views/protected/dashboard.html",
+        data: {
+            authenticated: !0,
+            claims: [ {
+                action: "access",
+                resource: "dashboard"
+            } ]
+        }
     }).otherwise({
         redirectTo: "/"
     });
 } ]), angular.module("cvbuilder.config", []).factory("cache", [ "$cacheFactory", function(a) {
     var b = a("cvbuilder-cache");
     return b;
+} ]), angular.module("cvbuilder.config").run([ "$rootScope", "$location", "accountService", "messageService", function(a, b, c, d) {
+    var e = function(a) {
+        return a.data && a.data.authenticated;
+    }, f = function(a) {
+        return a.data && a.data.claims && a.data.claims.length > 0;
+    };
+    a.$on("$routeChangeStart", function(a, g) {
+        // if route requires auth and user is not logged in
+        if (e(g) && !c.user.is_authenticated) return d.addAlert("Sorry - but you must be authenticated", !0), 
+        b.path("/login"), void 0;
+        if (f(g)) {
+            var h = _.find(c.user.details.claims, function(a) {
+                return _.find(g.data.claims, function(b) {
+                    return b.resource === a.resource && b.action === a.action;
+                });
+            });
+            h && 0 !== h.length || (d.addAlert("Sorry - but you do not have the right permissions to access this resource", !0), 
+            b.path("/login"));
+        }
+    });
 } ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
     a.login = function(a) {
-        e.login(a.username, a.password).then(function(a) {
+        return a && a.username && a.password ? (e.login(a.username, a.password).then(function(a) {
             //authenticate 
-            a && a.is_authenticated ? b.path("/dashboard") : d.add("Could not login and authenticate");
-        }, function() {});
+            a && a.is_authenticated && b.path("/dashboard");
+        }, function() {}), void 0) : (d.clear(), d.addAlert("Please type your username and password", !1), 
+        void 0);
     };
 } ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
@@ -38,7 +69,7 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     });
 } ]), angular.module("cvbuilder.interceptors", []), angular.module("cvbuilder.interceptors").config([ "$provide", "$httpProvider", function(a, b) {
     // Intercept http calls.
-    a.factory("HttpInterceptor", [ "$q", "$location", function(a, b) {
+    a.factory("HttpInterceptor", [ "$q", "$location", "messageService", function(a, b, c) {
         return {
             // On request success
             request: function(b) {
@@ -57,18 +88,18 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
                 // Return the response or promise.
                 return b || a.when(b);
             },
-            // On response failture
-            responseError: function(c) {
-                switch (c.status) {
+            // On response failure
+            responseError: function(d) {
+                switch (d.status) {
                   case 403:
-                    b.path("/status/403");
+                    c.addAlert("Sorry - you are forbidden to access this resource", !0), b.path("/status/403");
                     break;
 
                   case 404:
-                    b.path("/status/404");
+                    c.addAlert("Sorry - this page wasn't found", !0), b.path("/status/404");
                 }
                 // Return the promise rejection.
-                return a.reject(c);
+                return a.reject(d);
             }
         };
     } ]), // Add the interceptor to the $httpProvider.
@@ -81,14 +112,9 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     return function(b, c) {
         c.text(a);
     };
-} ]), angular.module("cvbuilder.directives").directive("message", [ "messageService", function(a) {
+} ]), angular.module("cvbuilder.directives").directive("message", [ "messageService", function() {
     return {
         restrict: "E",
-        controller: [ "$rootScope", "$scope", function(b, c) {
-            c.$on("handleMessageBroadcast", function() {
-                b.messages = a.getItems();
-            });
-        } ],
         replace: !0,
         template: '<div ng-repeat="item in messages">{{item.content}}</div>'
     };
@@ -113,7 +139,8 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         details: {
             first_name: "",
             last_name: "",
-            photo: ""
+            photo: "",
+            claims: []
         }
     }, g = function(b) {
         return f.is_authenticated = null != b.data.access_token, f.is_authenticated ? (f.token = b.data.access_token, 
@@ -131,10 +158,11 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
                 return a.get("/api/account");
             }).then(function(a) {
                 return f.details.first_name = a.data.first_name, //process user information
-                f.details.last_name = a.data.last_name, f.details.photo = a.data.photo, f;
+                f.details.last_name = a.data.last_name, f.details.photo = a.data.photo, f.details.claims = a.data.claims, 
+                f;
             }, function(a) {
                 //error
-                401 === a.status && e.add("Unauthorized Login");
+                401 === a.status && e.addAlert("Unauthorized Login", !1);
             });
         }
     };
@@ -160,21 +188,33 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         }
     };
 }), angular.module("cvbuilder.services").factory("messageService", [ "$rootScope", function(a) {
-    var b = [];
-    return {
-        add: function(c, d, e, f) {
-            b.push({
-                content: c,
-                title: d,
-                type: e,
-                preserve: f
+    a.messages = [];
+    var b = function() {
+        var b = [];
+        _.each(a.messages, function(a) {
+            a.preserve && (a.preserve = !1, b.push(a));
+        }), a.messages = b;
+    };
+    return a.$on("stateChange", b), a.$on("$locationChangeSuccess", b), {
+        addMessage: function(b, c, d, e) {
+            a.messages.push({
+                content: b,
+                title: c,
+                type: d,
+                preserve: e
             }), a.$broadcast("handleMessageBroadcast");
         },
-        getItems: function() {
-            return b.slice();
+        addAlert: function(b, c) {
+            a.messages.push({
+                content: b,
+                preserve: c
+            }), a.$broadcast("handleMessageBroadcast");
+        },
+        messageTypes: function() {
+            return [ "Alert", "Information" ];
         },
         clear: function() {
-            b = [], a.$broadcast("handleMessageBroadcast");
+            a.messages = [], a.$broadcast("handleMessageBroadcast");
         }
     };
 } ]), angular.module("cvbuilder.services").factory("versionService", [ "$http", function(a) {

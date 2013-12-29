@@ -56,6 +56,7 @@ module.exports = function(grunt) {
                         'src/cvbuilder.client/js/filters/*.js',
                         'src/cvbuilder.client/js/directives/*.js',
                         'src/cvbuilder.client/js/services/*.js',
+                        'src/cvbuilder.client/js/vendor/*.js',
                         'src/cvbuilder.client/js/routes.js',
                         'src/cvbuilder.client/js/app.js'
                     ]
@@ -74,6 +75,7 @@ module.exports = function(grunt) {
                         'src/cvbuilder.client/js/filters/*.js',
                         'src/cvbuilder.client/js/directives/*.js',
                         'src/cvbuilder.client/js/services/*.js',
+                        'src/cvbuilder.client/js/vendor/*.js',
                         'src/cvbuilder.client/js/routes.js',
                         'src/cvbuilder.client/js/app.js'
                     ]

@@ -2,7 +2,7 @@
 .config(["$provide", "$httpProvider", function ($provide, $httpProvider) {
 
     // Intercept http calls.
-    $provide.factory('HttpInterceptor', ["$q", "$location", function ($q, $location) {
+    $provide.factory('HttpInterceptor', ["$q", "$location", 'messageService', function ($q, $location, messageService) {
         return {
             // On request success
             request: function (config) {
@@ -25,13 +25,15 @@
                 return response || $q.when(response);
             },
 
-            // On response failture
+            // On response failure
             responseError: function (rejection) {
                 switch (rejection.status) {
                 case 403:
+                    messageService.addAlert("Sorry - you are forbidden to access this resource", true);
                     $location.path('/status/403');
                     break;
                 case 404:
+                    messageService.addAlert("Sorry - this page wasn't found", true);
                     $location.path('/status/404');
                     break;
                 }

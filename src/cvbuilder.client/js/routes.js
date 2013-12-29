@@ -3,7 +3,7 @@
         $locationProvider.html5Mode(true).hashPrefix('!');
 
         $routeProvider.when('/', {
-                templateUrl: '/public/views/home/frontpage.html'
+                templateUrl: '/public/views/home/frontpage.html',
             })
             .when('/about', {
                 templateUrl: '/public/views/home/about.html'
@@ -19,10 +19,17 @@
             .when('/status/:code', {
                 templateUrl: function(routeParameters) {
                     return '/public/views/status/' + routeParameters.code + ".html";
-                } 
+                },
+                data: {
+                    authenticated: true
+                }
             })
             .when('/dashboard', {
-               templateUrl: '/public/views/protected/dashboard.html' 
+                templateUrl: '/public/views/protected/dashboard.html',
+                data: {
+                    authenticated: true,
+                    claims: [{ 'action': 'access', 'resource': 'dashboard' }]
+                }
             })
             .otherwise({
                 redirectTo: '/'
