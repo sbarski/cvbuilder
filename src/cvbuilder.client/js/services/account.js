@@ -1,17 +1,26 @@
 ﻿angular.module('cvbuilder.services')
-    .factory('accountService', ['$http', '$location', '$q', 'base64', 'messageService', function ($http, $location, $q, base64, messageService) {
-        var user = {
-            is_authenticated: false,
-            username: '',
-            token: '',
-            token_expiry: '',
-            details: {
-                first_name: '',
-                last_name: '',
-                photo: '',
-                claims: []
-            }
+    .service('accountService', ['$rootScope', '$http', '$location', '$q', '$cookieStore', 'base64', 'messageService', function ($rootScope, $http, $location, $q, $cookieStore, base64, messageService) {
+
+        var userFactory = function () {
+            return {
+                create: function() {
+                    return {
+                        is_authenticated: false,
+                        username: '',
+                        token: '',
+                        token_expiry: '',
+                        details: {
+                            first_name: '',
+                            last_name: '',
+                            photo: '',
+                            claims: []
+                        }
+                    };
+                }
+            };
         };
+
+        var user = userFactory().create();
 
         var processAuthentication = function(result) {
             user.is_authenticated = result.data['access_token'] != null;
@@ -28,8 +37,28 @@
             return user;
         };
 
+        var processUserInformation = function(result) {
+            user.details.first_name = result.data['first_name']; //process user information
+            user.details.last_name = result.data['last_name'];
+            user.details.photo = result.data['photo'];
+            user.details.claims = result.data['claims'];
+
+            return user;
+        };
+
+        var storeUserSessionToCookie = function() {
+            $cookieStore.put('user-session', user);
+            return user;
+        };
+
         return {
-            user: user,
+            user: function() {
+                return user;
+            },
+            logout: function() {
+                $cookieStore.remove('user-session');
+                user = userFactory().create();
+            },
             register: function() {},
             login: function (username, password) {
                 $http.defaults.headers.common['Authorization'] = 'Basic ' + base64.encode(username + ':' + password);
@@ -39,16 +68,32 @@
                     }).then(function (userInformation) {
                         return $http.get('/api/account'); //get user information
                     }).then(function (result) {
-                        user.details.first_name = result.data['first_name']; //process user information
-                        user.details.last_name = result.data['last_name'];
-                        user.details.photo = result.data['photo'];
-                        user.details.claims = result.data['claims'];
-                        return user;
+                        return processUserInformation(result);
+                    }).then(function(userInformation) {
+                        return storeUserSessionToCookie();
                 }, function (error) { //error
                         if (error.status === 401) {
                             messageService.addAlert('Unauthorized Login', false);
                         }
                 });
+            },
+            restore: function () {
+                if (user.is_authenticated) {
+                    return true;
+                }
+
+                var defer = $q.defer();
+                
+                var restored = $cookieStore.get('user-session');
+                if (restored) {
+                    user = restored;
+                }
+                
+                if (defer) {
+                    defer.resolve();
+                }
+
+                return defer.promise;
             }
         };
 }]);

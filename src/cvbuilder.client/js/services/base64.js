@@ -1,5 +1,5 @@
 ﻿angular.module('cvbuilder.services')
-    .factory('base64', function () {
+    .service('base64', function () {
     var keyStr = 'ABCDEFGHIJKLMNOP' +
         'QRSTUVWXYZabcdef' +
         'ghijklmnopqrstuv' +

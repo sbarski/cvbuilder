@@ -1,5 +1,5 @@
 ﻿angular.module('cvbuilder.services')
-    .factory('messageService', ['$rootScope', function ($rootScope) {
+    .service('messageService', ['$rootScope', function ($rootScope) {
         $rootScope.messages = [];
 
         var onChange = function (event, newUrl, oldUrl) {
