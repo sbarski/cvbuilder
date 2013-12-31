@@ -22,7 +22,7 @@ angular
     $rootScope.$on('$routeChangeStart', function (event, next, current) {
         //detect logout
         $q.when(accountService.restore()).then(function (result) { //this doesn't need to be async for now but will help in the future
-            if (next.$$route.templateUrl === '/public/views/account/login.html' && accountService.user().is_authenticated) {
+            if (next.$$route.originalPath === '/login' && accountService.user().is_authenticated) {
                 $location.path('/dashboard');
             }
 

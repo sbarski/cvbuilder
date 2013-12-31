@@ -9,12 +9,12 @@
                 templateUrl: '/public/views/home/about.html'
             })
             .when('/register', {
-                templateUrl: '/public/views/account/register.html',
-                controller: 'accountController'
+                templateUrl: '/public/views/home/register.html',
+                controller: 'registerController'
             })
             .when('/login', {
-                templateUrl: '/public/views/account/login.html',
-                controller: 'accountController'
+                templateUrl: '/public/views/home/login.html',
+                controller: 'loginController'
             })
             .when('/status/:code', {
                 templateUrl: function(routeParameters) {
@@ -30,6 +30,13 @@
                     authenticated: true,
                     claims: [{ 'action': 'access', 'resource': 'dashboard' }]
                 }
+            })
+            .when('/account', {
+                templateUrl: 'public/views/protected/account/manage.html',
+                data: {
+                    authenticated: true
+                },
+                controller: 'accountController'
             })
             .otherwise({
                 redirectTo: '/'

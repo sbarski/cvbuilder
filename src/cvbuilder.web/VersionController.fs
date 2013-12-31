@@ -17,6 +17,6 @@ type VersionController() =
     inherit ApiController()
 
     [<Authorize>]
-    [<ClaimsAuthorize("read", "version")>]
+    //[<ClaimsAuthorize("read", "version")>]
     member x.Get() =
         x.Request.CreateResponse(HttpStatusCode.OK, VersionRendition(Message = ConfigurationManager.AppSettings.Item("version")))

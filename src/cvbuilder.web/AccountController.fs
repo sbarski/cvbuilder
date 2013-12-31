@@ -10,6 +10,8 @@ open System.Threading
 open HttpClient
 open Newtonsoft.Json
 open System.Security.Claims
+open System.IdentityModel.Services
+open System.IdentityModel.Tokens
 open Thinktecture.IdentityModel.Authorization.WebApi
 
 type Claim = {
@@ -29,7 +31,13 @@ type AccountController() =
     inherit ApiController()
 
     [<Authorize>]
+    [<Route("details")>]
     member x.Get() =
         let claims = List.map (fun (claim:System.Security.Claims.Claim) -> {action = claim.Type; resource = claim.Value}) (List.ofSeq ClaimsPrincipal.Current.Claims)
         let user = {first_name = "Peter"; last_name="Sbarski"; photo = "Photo"; claims = claims}
         x.Request.CreateResponse(HttpStatusCode.Accepted, user)
+
+    [<Authorize>]
+    [<Route("logout")>]
+    member x.Post() =
+        x.Request.CreateResponse(HttpStatusCode.OK);

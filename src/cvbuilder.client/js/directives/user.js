@@ -11,6 +11,7 @@ angular.module('cvbuilder.directives').
             $scope.logout = function() {
                 accountService.logout();
                 $scope.user = {};
+                $location.path('/');
             };
         }],
         replace: true,

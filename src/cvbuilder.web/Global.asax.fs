@@ -6,14 +6,36 @@ open System.Linq
 open System.Xml
 open System.Web.Http
 open System.Net
+open System.Net.Http
 open System.Threading
 open System.Security.Claims
 open Thinktecture.IdentityModel
 open Thinktecture.IdentityModel.Tokens.Http
+open System.IdentityModel.Tokens
+open System.IdentityModel.Protocols.WSTrust
 open Thinktecture.IdentityModel.Authorization.WebApi
 
 type HttpRouteDefaults = { Controller: string; Id : obj}
 
+   
+type MyAuthenticationConfiguration(configuration: AuthenticationConfiguration) =
+    inherit Thinktecture.IdentityModel.Tokens.Http.HttpAuthentication(configuration: AuthenticationConfiguration)
+
+    override x.Authenticate(request: System.Net.Http.HttpRequestMessage) =
+        base.Authenticate(request)
+
+    override x.AuthenticateSessionToken(request: System.Net.Http.HttpRequestMessage) =
+        try
+            base.AuthenticateSessionToken(request)
+        with
+        | _ -> 
+            let exc = AuthenticationException("Security Token Validation Failure - Probably Expired")
+            exc.StatusCode <- HttpStatusCode.NotAcceptable
+            exc.ReasonPhrase <- "Security Token Validation Failure"
+            raise exc
+
+type MyAuthenticationHandler(configuration: Thinktecture.IdentityModel.Tokens.Http.HttpAuthentication, ?httpConfiguration: System.Web.Http.HttpConfiguration) = 
+    inherit Thinktecture.IdentityModel.Tokens.Http.AuthenticationHandler(configuration, httpConfiguration = null)
 
 type Global() = 
     inherit System.Web.HttpApplication()
@@ -33,6 +55,7 @@ type Global() =
         else
             raise (new AuthenticationException())
 
+
     member this.ConfigureAuthentication (config: HttpConfiguration) =
         let sessionTokenConfiguration = new SessionTokenConfiguration()
         sessionTokenConfiguration.EndpointAddress <- "/api/authenticate"
@@ -42,6 +65,8 @@ type Global() =
         auth.EnableSessionToken <- true
         auth.SendWwwAuthenticateResponseHeaders <- false
         auth.SessionToken <- sessionTokenConfiguration
+        auth.SessionToken.DefaultTokenLifetime <- TimeSpan.FromSeconds(1.0)
+        auth.InheritHostClientIdentity <- false
         auth.ClaimsAuthenticationManager <- new ClaimsTransformer()
         
         let securityTokenHandler = new Thinktecture.IdentityModel.Tokens.Http.BasicAuthenticationSecurityTokenHandler(fun username password -> this.ValidateUser(username, password))
@@ -56,10 +81,11 @@ type Global() =
 
         let tokenMapping = new AuthenticationOptionMapping()
         tokenMapping.Options <- AuthenticationOptions.ForAuthorizationHeader("Session")
-        tokenMapping.TokenHandler <- System.IdentityModel.Tokens.SecurityTokenHandlerCollection.CreateDefaultSecurityTokenHandlerCollection()
         auth.AddMapping(tokenMapping)
         
-        config.MessageHandlers.Add(new AuthenticationHandler(auth)) 
+        let myHttpAuthentication = new MyAuthenticationConfiguration(auth);
+
+        config.MessageHandlers.Add(new MyAuthenticationHandler(myHttpAuthentication)) 
 
     member this.Application_Start (sender: obj) (e: EventArgs) =
         GlobalConfiguration.Configure(Action<_> this.RegisterWebApi)

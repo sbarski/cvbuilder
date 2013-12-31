@@ -2,7 +2,7 @@
 .config(["$provide", "$httpProvider", function ($provide, $httpProvider) {
 
     // Intercept http calls.
-    $provide.factory('HttpInterceptor', ["$q", "$location", 'messageService', function ($q, $location, messageService) {
+    $provide.factory('HttpInterceptor', ["$rootScope", "$q", "$location", 'messageService', function ($rootScope, $q, $location, messageService) {
         return {
             // On request success
             request: function (config) {
@@ -36,7 +36,13 @@
                     messageService.addAlert("Sorry - this page wasn't found", true);
                     $location.path('/status/404');
                     break;
+                case 406: //re-validate again
+                    $rootScope.$broadcast('logout');
+                    messageService.addAlert("Sorry - you have been signed out. Please login again.", true);
+                    $location.path('/login');
+                    break;
                 }
+                    
 
                 // Return the promise rejection.
                 return $q.reject(rejection);

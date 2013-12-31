@@ -1,4 +1,4 @@
-/*! 2013-12-30 */
+/*! 2013-12-31 */
 "use strict";
 
 angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$locationProvider", function(a, b) {
@@ -7,11 +7,11 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     }).when("/about", {
         templateUrl: "/public/views/home/about.html"
     }).when("/register", {
-        templateUrl: "/public/views/account/register.html",
-        controller: "accountController"
+        templateUrl: "/public/views/home/register.html",
+        controller: "registerController"
     }).when("/login", {
-        templateUrl: "/public/views/account/login.html",
-        controller: "accountController"
+        templateUrl: "/public/views/home/login.html",
+        controller: "loginController"
     }).when("/status/:code", {
         templateUrl: function(a) {
             return "/public/views/status/" + a.code + ".html";
@@ -28,6 +28,12 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
                 resource: "dashboard"
             } ]
         }
+    }).when("/account", {
+        templateUrl: "public/views/protected/account/manage.html",
+        data: {
+            authenticated: !0
+        },
+        controller: "accountController"
     }).otherwise({
         redirectTo: "/"
     });
@@ -44,7 +50,7 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         //detect logout
         c.when(d.restore()).then(function() {
             if (//this doesn't need to be async for now but will help in the future
-            "/public/views/account/login.html" === h.$$route.templateUrl && d.user().is_authenticated && b.path("/dashboard"), 
+            "/login" === h.$$route.originalPath && d.user().is_authenticated && b.path("/dashboard"), 
             f(h) && !d.user().is_authenticated && (e.addAlert("Sorry - but you must be authenticated", !0), 
             b.path("/login")), g(h)) {
                 var a = _.find(d.user().details.claims, function(a) {
@@ -57,7 +63,8 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             }
         });
     });
-} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
+} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "$location", "cache", "messageService", "accountService", function() {} ]), 
+angular.module("cvbuilder.controllers").controller("loginController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
     a.login = function(a) {
         return a && a.username && a.password ? (e.login(a.username, a.password).then(function(a) {
             //authenticate 
@@ -65,44 +72,51 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         }), void 0) : (d.clear(), d.addAlert("Please type your username and password", !1), 
         void 0);
     };
-} ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
+} ]), angular.module("cvbuilder.controllers").controller("registerController", [ "$scope", "$location", "cache", "messageService", "accountService", function() {} ]), 
+angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
     a.version = null != d ? d : c.getVersion().then(function(c) {
         a.version = c, b.put("version", c);
     });
 } ]), angular.module("cvbuilder.interceptors", []), angular.module("cvbuilder.interceptors").config([ "$provide", "$httpProvider", function(a, b) {
     // Intercept http calls.
-    a.factory("HttpInterceptor", [ "$q", "$location", "messageService", function(a, b, c) {
+    a.factory("HttpInterceptor", [ "$rootScope", "$q", "$location", "messageService", function(a, b, c, d) {
         return {
             // On request success
-            request: function(b) {
+            request: function(a) {
                 //if (userService != null && userService.token != null && userService.IsAuthenticated) {
                 //    config.headers["Authorization"] = 'Session ' + userService.Token;
                 //}
-                return b || a.when(b);
+                return a || b.when(a);
             },
             // On request failure
-            requestError: function(b) {
+            requestError: function(a) {
                 // Return the promise rejection.
-                return a.reject(b);
+                return b.reject(a);
             },
             // On response success
-            response: function(b) {
+            response: function(a) {
                 // Return the response or promise.
-                return b || a.when(b);
+                return a || b.when(a);
             },
             // On response failure
-            responseError: function(d) {
-                switch (d.status) {
+            responseError: function(e) {
+                switch (e.status) {
                   case 403:
-                    c.addAlert("Sorry - you are forbidden to access this resource", !0), b.path("/status/403");
+                    d.addAlert("Sorry - you are forbidden to access this resource", !0), c.path("/status/403");
                     break;
 
                   case 404:
-                    c.addAlert("Sorry - this page wasn't found", !0), b.path("/status/404");
+                    d.addAlert("Sorry - this page wasn't found", !0), c.path("/status/404");
+                    break;
+
+                  case 406:
+                    //re-validate again
+                    a.$broadcast("logout"), d.addAlert("Sorry - you have been signed out. Please login again.", !0), 
+                    c.path("/login");
                 }
                 // Return the promise rejection.
-                return a.reject(d);
+                return b.reject(e);
             }
         };
     } ]), // Add the interceptor to the $httpProvider.
@@ -127,9 +141,9 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         scope: {
             ngModel: "="
         },
-        controller: [ "$scope", function(a) {
-            a.user = b.user().details, a.logout = function() {
-                b.logout(), a.user = {};
+        controller: [ "$scope", function(c) {
+            c.user = b.user().details, c.logout = function() {
+                b.logout(), c.user = {}, a.path("/");
             };
         } ],
         replace: !0,
@@ -164,13 +178,17 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         i;
     }, l = function() {
         return e.put("user-session", i), i;
+    }, m = function() {
+        e.remove("user-session"), b.defaults.headers.common.Authorization = "", i = h().create();
     };
-    return {
+    return a.$on("logout", function() {
+        m();
+    }), {
         user: function() {
             return i;
         },
         logout: function() {
-            e.remove("user-session"), i = h().create();
+            b.post("/api/account/logout"), m();
         },
         register: function() {},
         login: function(a, c) {
@@ -178,7 +196,7 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             b.post("/api/authenticate").then(function(a) {
                 return j(a);
             }).then(function() {
-                return b.get("/api/account");
+                return b.get("/api/account/details");
             }).then(function(a) {
                 return k(a);
             }).then(function() {
@@ -190,8 +208,9 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         },
         restore: function() {
             if (i.is_authenticated) return !0;
-            var a = d.defer(), b = e.get("user-session");
-            return b && (i = b), a && a.resolve(), a.promise;
+            var a = d.defer(), c = e.get("user-session");
+            return c && (i = c, b.defaults.headers.common.Authorization = "Session " + i.token), 
+            a && a.resolve(), a.promise;
         }
     };
 } ]), angular.module("cvbuilder.services").service("base64", function() {
@@ -248,7 +267,7 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
 } ]), angular.module("cvbuilder.services").service("versionService", [ "$http", function(a) {
     return {
         getVersion: function() {
-            return a.get("/api/version").then(function(a) {
+            return console.log("get version"), a.get("/api/version").then(function(a) {
                 return a.data.Message;
             }, function() {});
         }

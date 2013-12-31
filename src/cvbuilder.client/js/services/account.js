@@ -51,13 +51,23 @@
             return user;
         };
 
+        var userLogout = function() {
+            $cookieStore.remove('user-session');
+            $http.defaults.headers.common['Authorization'] = "";
+            user = userFactory().create();
+        };
+
+        $rootScope.$on('logout', function(e, args) {
+            userLogout();
+        });
+
         return {
             user: function() {
                 return user;
             },
-            logout: function() {
-                $cookieStore.remove('user-session');
-                user = userFactory().create();
+            logout: function () {
+                $http.post('/api/account/logout');
+                userLogout();
             },
             register: function() {},
             login: function (username, password) {
@@ -66,7 +76,7 @@
                     .then(function (result) {
                         return processAuthentication(result); //process returned data
                     }).then(function (userInformation) {
-                        return $http.get('/api/account'); //get user information
+                        return $http.get('/api/account/details'); //get user information
                     }).then(function (result) {
                         return processUserInformation(result);
                     }).then(function(userInformation) {
@@ -87,6 +97,7 @@
                 var restored = $cookieStore.get('user-session');
                 if (restored) {
                     user = restored;
+                    $http.defaults.headers.common['Authorization'] = 'Session ' + user.token;
                 }
                 
                 if (defer) {
