@@ -37,6 +37,11 @@ type AccountController() =
         let user = {first_name = "Peter"; last_name="Sbarski"; photo = "Photo"; claims = claims}
         x.Request.CreateResponse(HttpStatusCode.Accepted, user)
 
+    [<AllowAnonymous>]
+    [<Route("register")>]
+    member x.Post([<FromBody>] data: Newtonsoft.Json.Linq.JObject) =
+        x.Request.CreateResponse(HttpStatusCode.OK);
+
     [<Authorize>]
     [<Route("logout")>]
     member x.Post() =

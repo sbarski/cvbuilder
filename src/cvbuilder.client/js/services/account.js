@@ -1,6 +1,5 @@
 ﻿angular.module('cvbuilder.services')
     .service('accountService', ['$rootScope', '$http', '$location', '$q', '$cookieStore', 'base64', 'messageService', function ($rootScope, $http, $location, $q, $cookieStore, base64, messageService) {
-
         var userFactory = function () {
             return {
                 create: function() {
@@ -69,7 +68,14 @@
                 $http.post('/api/account/logout');
                 userLogout();
             },
-            register: function() {},
+            register: function(username, password) {
+                return $http.post('/api/account/register', {
+                    username: username,
+                    password: password
+                }).then(function(result) {
+                    
+                });
+            },
             login: function (username, password) {
                 $http.defaults.headers.common['Authorization'] = 'Basic ' + base64.encode(username + ':' + password);
                 return $http.post('/api/authenticate') //authenticate

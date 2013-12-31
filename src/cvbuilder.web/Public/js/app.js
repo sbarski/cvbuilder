@@ -72,8 +72,11 @@ angular.module("cvbuilder.controllers").controller("loginController", [ "$scope"
         }), void 0) : (d.clear(), d.addAlert("Please type your username and password", !1), 
         void 0);
     };
-} ]), angular.module("cvbuilder.controllers").controller("registerController", [ "$scope", "$location", "cache", "messageService", "accountService", function() {} ]), 
-angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
+} ]), angular.module("cvbuilder.controllers").controller("registerController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
+    a.register = function(a) {
+        e.register(a.username, a.password);
+    };
+} ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
     a.version = null != d ? d : c.getVersion().then(function(c) {
         a.version = c, b.put("version", c);
@@ -190,7 +193,12 @@ angular.module("cvbuilder.controllers").controller("versionController", [ "$scop
         logout: function() {
             b.post("/api/account/logout"), m();
         },
-        register: function() {},
+        register: function(a, c) {
+            return b.post("/api/account/register", {
+                username: a,
+                password: c
+            }).then(function() {});
+        },
         login: function(a, c) {
             return b.defaults.headers.common.Authorization = "Basic " + f.encode(a + ":" + c), 
             b.post("/api/authenticate").then(function(a) {
