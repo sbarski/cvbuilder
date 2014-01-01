@@ -2,11 +2,14 @@
 
 // Declare app level module which depends on filters, and services
 angular.module('cvbuilder', [
-    'ngRoute',
+    'cvbuilder.services',
     'cvbuilder.routes',
     'cvbuilder.config',
     'cvbuilder.filters',
-    'cvbuilder.services',
     'cvbuilder.directives',
-    'cvbuilder.controllers'
+    'cvbuilder.interceptors',
+    'cvbuilder.controllers',
+    'ngRoute',
+    'ngCookies'
 ]);
+

@@ -42,16 +42,21 @@ module.exports = function(grunt) {
       },
        development: {
                 options: {
-                    beautify: true
+                    beautify: true,
+                    preserveComments: true,
+                    drop_debugger: false,
+                    dead_code: true
                 },
                 files: {
                     'src/cvbuilder.web/public/js/app.js': [
                         'src/cvbuilder.client/js/routes.js',
                         'src/cvbuilder.client/js/config.js',
                         'src/cvbuilder.client/js/controllers/*.js',
+                        'src/cvbuilder.client/js/interceptors/*.js',
                         'src/cvbuilder.client/js/filters/*.js',
                         'src/cvbuilder.client/js/directives/*.js',
                         'src/cvbuilder.client/js/services/*.js',
+                        'src/cvbuilder.client/js/vendor/*.js',
                         'src/cvbuilder.client/js/routes.js',
                         'src/cvbuilder.client/js/app.js'
                     ]
@@ -66,9 +71,11 @@ module.exports = function(grunt) {
                         'src/cvbuilder.client/js/routes.js',
                         'src/cvbuilder.client/js/config.js',
                         'src/cvbuilder.client/js/controllers/*.js',
+                        'src/cvbuilder.client/js/interceptors/*.js',
                         'src/cvbuilder.client/js/filters/*.js',
                         'src/cvbuilder.client/js/directives/*.js',
                         'src/cvbuilder.client/js/services/*.js',
+                        'src/cvbuilder.client/js/vendor/*.js',
                         'src/cvbuilder.client/js/routes.js',
                         'src/cvbuilder.client/js/app.js'
                     ]
