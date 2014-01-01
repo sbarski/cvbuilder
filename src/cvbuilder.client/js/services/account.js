@@ -5,13 +5,13 @@
                 create: function() {
                     return {
                         is_authenticated: false,
-                        username: '',
                         token: '',
                         token_expiry: '',
                         details: {
                             first_name: '',
                             last_name: '',
                             photo: '',
+                            username: '',
                             claims: []
                         }
                     };
@@ -37,16 +37,7 @@
         };
 
         var processUserInformation = function(result) {
-            user.details.first_name = result.data['first_name']; //process user information
-            user.details.last_name = result.data['last_name'];
-            user.details.photo = result.data['photo'];
-            user.details.claims = result.data['claims'];
-
-            return user;
-        };
-
-        var storeUserSessionToCookie = function() {
-            $cookieStore.put('user-session', user);
+            user.details = result.data;
             return user;
         };
 
@@ -65,33 +56,47 @@
                 return user;
             },
             logout: function () {
-                $http.post('/api/account/logout');
+                $http.post('/api/logout');
                 userLogout();
             },
             register: function(username, password) {
-                return $http.post('/api/account/register', {
+                return $http.put('/api/register', {
                     username: username,
                     password: password
+                }).then(function (result) {
+                    messageService.addAlert('Could not register you with the system', false);
+                });
+            },
+            update: function(details, password) {
+                return $http.post('/api/account/update', {
+                    user: details,
+                    password: base64.encode(password === undefined ? '' : password)
                 }).then(function(result) {
-                    
+                    messageService.addMessage('Your details have been successfully updated');
+                }, function(failure) {
+                    messageService.addAlert('Failed to update your account. Please try again.', false);
                 });
             },
             login: function (username, password) {
                 $http.defaults.headers.common['Authorization'] = 'Basic ' + base64.encode(username + ':' + password);
+
                 return $http.post('/api/authenticate') //authenticate
-                    .then(function (result) {
-                        return processAuthentication(result); //process returned data
-                    }).then(function (userInformation) {
-                        return $http.get('/api/account/details'); //get user information
-                    }).then(function (result) {
-                        return processUserInformation(result);
-                    }).then(function(userInformation) {
-                        return storeUserSessionToCookie();
+                .then(function (result) {
+                    return processAuthentication(result); //process returned data
                 }, function (error) { //error
-                        if (error.status === 401) {
-                            messageService.addAlert('Unauthorized Login', false);
-                        }
+                    messageService.addAlert('Could not login', false);
                 });
+            },
+            getUserDetails: function() {
+                return $http.get('/api/account')
+                .then(function(result) {
+                    return processUserInformation(result);
+                }, function (error) {
+                    messageService.addAlert('Could not get user information', false);
+                });
+            },
+            store: function() {
+                $cookieStore.put('user-session', user);
             },
             restore: function () {
                 if (user.is_authenticated) {

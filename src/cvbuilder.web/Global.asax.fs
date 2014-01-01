@@ -65,7 +65,7 @@ type Global() =
         auth.EnableSessionToken <- true
         auth.SendWwwAuthenticateResponseHeaders <- false
         auth.SessionToken <- sessionTokenConfiguration
-        auth.SessionToken.DefaultTokenLifetime <- TimeSpan.FromSeconds(1.0)
+        auth.SessionToken.DefaultTokenLifetime <- TimeSpan.FromHours(24.0)
         auth.InheritHostClientIdentity <- false
         auth.ClaimsAuthenticationManager <- new ClaimsTransformer()
         

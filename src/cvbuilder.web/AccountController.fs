@@ -24,6 +24,7 @@ type User = {
     last_name: string;
     photo: string;
     claims: list<Claim>;
+    username: string;
 }
 
 [<RoutePrefix("api/account")>]
@@ -31,18 +32,14 @@ type AccountController() =
     inherit ApiController()
 
     [<Authorize>]
-    [<Route("details")>]
     member x.Get() =
         let claims = List.map (fun (claim:System.Security.Claims.Claim) -> {action = claim.Type; resource = claim.Value}) (List.ofSeq ClaimsPrincipal.Current.Claims)
-        let user = {first_name = "Peter"; last_name="Sbarski"; photo = "Photo"; claims = claims}
+        let user = {first_name = "Peter"; last_name="Sbarski"; photo = "Photo"; claims = claims; username="peter.sbarski@gmail.com"}
         x.Request.CreateResponse(HttpStatusCode.Accepted, user)
 
-    [<AllowAnonymous>]
-    [<Route("register")>]
-    member x.Post([<FromBody>] data: Newtonsoft.Json.Linq.JObject) =
+    [<Authorize>]
+    [<Route("update")>]
+    member x.Post([<FromBody>] user: Newtonsoft.Json.Linq.JObject) =
         x.Request.CreateResponse(HttpStatusCode.OK);
 
-    [<Authorize>]
-    [<Route("logout")>]
-    member x.Post() =
-        x.Request.CreateResponse(HttpStatusCode.OK);
+

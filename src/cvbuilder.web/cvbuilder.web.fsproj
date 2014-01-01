@@ -94,14 +94,16 @@
     <None Include="web.config" />
     <None Include="Global.asax" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="LogoutController.fs" />
     <Compile Include="ResponseService.fs" />
     <Compile Include="SecurityService.fs" />
     <Compile Include="Global.asax.fs" />
     <Compile Include="DomainTypes.fs" />
     <Compile Include="UserService.fs" />
     <Compile Include="HomeController.fs" />
-    <Compile Include="AccountController.fs" />
     <Compile Include="VersionController.fs" />
+    <Compile Include="RegisterController.fs" />
+    <Compile Include="AccountController.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="HttpClient">

@@ -1,0 +1,27 @@
+﻿<message></message>
+
+<span user></span>
+
+Hello User, welcome to the management console. Here you can do things.
+
+<form name="manage">
+    Email Address: <input type="text" name="username" ng-model="user.username" required/>
+    <span class="error" ng-show="manage.username.$error.required">Required</span>
+    <br/>
+    
+    Password: <input type="text" name="password" ng-model="password" />
+    <br />
+    
+    First Name: <input type="text" name="firstname" ng-model="user.first_name" ng-minlength="2" ng-maxlength="50"/>
+    <span class="error" ng-show="manage.firstname.$error.minlength">Too short</span>
+    <span class="error" ng-show="manage.firstname.$error.maxlength">Too long</span>
+    <br/>
+
+    Last Name: <input text="text" name="lastname" ng-model="user.last_name" ng-minlength="2" ng-maxlength="50"/>
+    <span class="error" ng-show="manage.lastname.$error.minlength">Too short</span>
+    <span class="error" ng-show="manage.lastname.$error.maxlength">Too long</span>
+    <br/>
+
+    <button ng-click="update(user, password)">Update</button> 
+    <button ng-click="delete(user)">Delete Account</button>
+</form>

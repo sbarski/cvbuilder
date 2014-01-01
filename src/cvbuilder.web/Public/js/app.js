@@ -1,4 +1,4 @@
-/*! 2013-12-31 */
+/*! 2014-01-01 */
 "use strict";
 
 angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$locationProvider", function(a, b) {
@@ -63,14 +63,28 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             }
         });
     });
-} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "$location", "cache", "messageService", "accountService", function() {} ]), 
-angular.module("cvbuilder.controllers").controller("loginController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
-    a.login = function(a) {
-        return a && a.username && a.password ? (e.login(a.username, a.password).then(function(a) {
-            //authenticate 
-            a && a.is_authenticated && b.path("/dashboard");
-        }), void 0) : (d.clear(), d.addAlert("Please type your username and password", !1), 
-        void 0);
+} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
+    a.user = e.user().details, a.update = function(a, b) {
+        e.update(a, b);
+    }, a.delete = function(a) {
+        e.delete(a);
+    };
+} ]), angular.module("cvbuilder.controllers").controller("loginController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
+    var f = function(a) {
+        return e.login(a.username, a.password);
+    }, g = function() {
+        return e.getUserDetails();
+    }, h = function() {
+        return e.store();
+    };
+    a.$on("user-authenticated", function() {
+        g().then(function() {
+            h(), b.path("/dashboard");
+        });
+    }), a.login = function(b) {
+        f(b).then(function() {
+            a.$broadcast("user-authenticated");
+        });
     };
 } ]), angular.module("cvbuilder.controllers").controller("registerController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
     a.register = function(a) {
@@ -159,13 +173,13 @@ angular.module("cvbuilder.controllers").controller("loginController", [ "$scope"
             create: function() {
                 return {
                     is_authenticated: !1,
-                    username: "",
                     token: "",
                     token_expiry: "",
                     details: {
                         first_name: "",
                         last_name: "",
                         photo: "",
+                        username: "",
                         claims: []
                     }
                 };
@@ -176,43 +190,55 @@ angular.module("cvbuilder.controllers").controller("loginController", [ "$scope"
         i.token_expiry = a.data.expires_in, b.defaults.headers.common.Authorization = "Session " + i.token) : d.reject("An error occurrred during authentication"), 
         i;
     }, k = function(a) {
-        return i.details.first_name = a.data.first_name, //process user information
-        i.details.last_name = a.data.last_name, i.details.photo = a.data.photo, i.details.claims = a.data.claims, 
-        i;
+        return i.details = a.data, i;
     }, l = function() {
-        return e.put("user-session", i), i;
-    }, m = function() {
         e.remove("user-session"), b.defaults.headers.common.Authorization = "", i = h().create();
     };
     return a.$on("logout", function() {
-        m();
+        l();
     }), {
         user: function() {
             return i;
         },
         logout: function() {
-            b.post("/api/account/logout"), m();
+            b.post("/api/logout"), l();
         },
         register: function(a, c) {
-            return b.post("/api/account/register", {
+            return b.put("/api/register", {
                 username: a,
                 password: c
-            }).then(function() {});
+            }).then(function() {
+                g.addAlert("Could not register you with the system", !1);
+            });
+        },
+        update: function(a, c) {
+            return b.post("/api/account/update", {
+                user: a,
+                password: f.encode(void 0 === c ? "" : c)
+            }).then(function() {
+                g.addMessage("Your details have been successfully updated");
+            }, function() {
+                g.addAlert("Failed to update your account. Please try again.", !1);
+            });
         },
         login: function(a, c) {
             return b.defaults.headers.common.Authorization = "Basic " + f.encode(a + ":" + c), 
             b.post("/api/authenticate").then(function(a) {
                 return j(a);
-            }).then(function() {
-                return b.get("/api/account/details");
-            }).then(function(a) {
-                return k(a);
-            }).then(function() {
-                return l();
-            }, function(a) {
+            }, function() {
                 //error
-                401 === a.status && g.addAlert("Unauthorized Login", !1);
+                g.addAlert("Could not login", !1);
             });
+        },
+        getUserDetails: function() {
+            return b.get("/api/account").then(function(a) {
+                return k(a);
+            }, function() {
+                g.addAlert("Could not get user information", !1);
+            });
+        },
+        store: function() {
+            e.put("user-session", i);
         },
         restore: function() {
             if (i.is_authenticated) return !0;
