@@ -13,11 +13,30 @@ open System.Security.Claims
 open System.IdentityModel.Services
 open System.IdentityModel.Tokens
 open Thinktecture.IdentityModel.Authorization.WebApi
+open Microsoft.FSharp.Core
+open Newtonsoft.Json.Linq
+open cvbuilder.core.db
 
 [<RoutePrefix("api/register")>]
 type RegisterController() =
     inherit ApiController()
 
-    [<AllowAnonymous>]
     member x.Put([<FromBody>] data: Newtonsoft.Json.Linq.JObject) =
-        x.Request.CreateResponse(HttpStatusCode.OK);
+        if data = null then
+            x.Request.CreateErrorResponse(HttpStatusCode.PreconditionFailed, "The authorization header was not included")
+        else
+            let user = data.GetValue("cred").ToString()
+                       |> fun result -> System.Text.Encoding.Default.GetString (System.Convert.FromBase64String result)       
+                       |> fun line -> line.Split([|':'|]) 
+                       |> fun data -> {username =  data.[0]; password = data.[1]; auth_token=""; id = Guid.NewGuid(); created_on = DateTimeOffset.UtcNow; updated_on = DateTimeOffset.UtcNow }
+
+            if UserExists user.username then
+                x.Request.CreateErrorResponse(HttpStatusCode.PreconditionFailed, "User with the given username/email already exists.")
+            else
+                try
+                    let createdUser = CreateUser user //create user
+                    x.Request.CreateResponse(HttpStatusCode.OK); //the user can request the token now
+                with
+                | ex -> x.Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "We couldn't create a new user. Please try again.")
+
+

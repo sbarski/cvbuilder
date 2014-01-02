@@ -1,4 +1,4 @@
-/*! 2014-01-01 */
+/*! 2014-01-02 */
 "use strict";
 
 angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$locationProvider", function(a, b) {
@@ -40,21 +40,21 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
 } ]), angular.module("cvbuilder.config", []).factory("cache", [ "$cacheFactory", function(a) {
     var b = a("cvbuilder-cache");
     return b;
-} ]), angular.module("cvbuilder.config").run([ "$rootScope", "$location", "$q", "accountService", "messageService", function(a, b, c, d, e) {
-    var f = function(a) {
+} ]), angular.module("cvbuilder.config").run([ "$rootScope", "$location", "$q", "userService", "messageService", "authService", function(a, b, c, d, e, f) {
+    var g = function(a) {
         return a.data && a.data.authenticated;
-    }, g = function(a) {
+    }, h = function(a) {
         return a.data && a.data.claims && a.data.claims.length > 0;
     };
-    a.$on("$routeChangeStart", function(a, h) {
+    a.$on("$routeChangeStart", function(a, i) {
         //detect logout
-        c.when(d.restore()).then(function() {
+        c.when(f.restoreFromCookie()).then(function() {
             if (//this doesn't need to be async for now but will help in the future
-            "/login" === h.$$route.originalPath && d.user().is_authenticated && b.path("/dashboard"), 
-            f(h) && !d.user().is_authenticated && (e.addAlert("Sorry - but you must be authenticated", !0), 
-            b.path("/login")), g(h)) {
+            "/login" === i.$$route.originalPath && d.isAuthenticated() && b.path("/dashboard"), 
+            g(i) && !d.isAuthenticated() && (e.addAlert("Sorry - but you must be authenticated", !0), 
+            b.path("/login")), h(i)) {
                 var a = _.find(d.user().details.claims, function(a) {
-                    return _.find(h.data.claims, function(b) {
+                    return _.find(i.data.claims, function(b) {
                         return b.resource === a.resource && b.action === a.action;
                     });
                 });
@@ -63,32 +63,19 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             }
         });
     });
-} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
+} ]), angular.module("cvbuilder.controllers", []), angular.module("cvbuilder.controllers").controller("accountController", [ "$scope", "$location", "cache", "messageService", "userService", function(a, b, c, d, e) {
     a.user = e.user().details, a.update = function(a, b) {
         e.update(a, b);
     }, a.delete = function(a) {
         e.delete(a);
     };
-} ]), angular.module("cvbuilder.controllers").controller("loginController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
-    var f = function(a) {
-        return e.login(a.username, a.password);
-    }, g = function() {
-        return e.getUserDetails();
-    }, h = function() {
-        return e.store();
+} ]), angular.module("cvbuilder.controllers").controller("loginController", [ "$rootScope", "$scope", "$location", "cache", "messageService", "authService", function(a, b, c, d, e, f) {
+    b.login = function(a) {
+        f.login(a);
     };
-    a.$on("user-authenticated", function() {
-        g().then(function() {
-            h(), b.path("/dashboard");
-        });
-    }), a.login = function(b) {
-        f(b).then(function() {
-            a.$broadcast("user-authenticated");
-        });
-    };
-} ]), angular.module("cvbuilder.controllers").controller("registerController", [ "$scope", "$location", "cache", "messageService", "accountService", function(a, b, c, d, e) {
-    a.register = function(a) {
-        e.register(a.username, a.password);
+} ]), angular.module("cvbuilder.controllers").controller("registerController", [ "$rootScope", "$scope", "$location", "cache", "messageService", "authService", function(a, b, c, d, e, f) {
+    b.register = function(a) {
+        f.register(a);
     };
 } ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
@@ -152,99 +139,77 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         replace: !0,
         template: '<div ng-repeat="item in messages">{{item.content}}</div>'
     };
-} ]), angular.module("cvbuilder.directives").directive("user", [ "$location", "accountService", function(a, b) {
+} ]), angular.module("cvbuilder.directives").directive("user", [ "$location", "authService", "userService", function(a, b, c) {
     return {
         restrict: "AE",
         scope: {
             ngModel: "="
         },
-        controller: [ "$scope", function(c) {
-            c.user = b.user().details, c.logout = function() {
-                b.logout(), c.user = {}, a.path("/");
+        controller: [ "$scope", function(d) {
+            d.user = c.user().details, d.logout = function() {
+                b.logout(), d.user = {}, a.path("/");
             };
         } ],
         replace: !0,
         templateUrl: "/public/views/protected/partials/user.html",
         link: function() {}
     };
-} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").service("accountService", [ "$rootScope", "$http", "$location", "$q", "$cookieStore", "base64", "messageService", function(a, b, c, d, e, f, g) {
-    var h = function() {
-        return {
-            create: function() {
-                return {
-                    is_authenticated: !1,
-                    token: "",
-                    token_expiry: "",
-                    details: {
-                        first_name: "",
-                        last_name: "",
-                        photo: "",
-                        username: "",
-                        claims: []
-                    }
-                };
+} ]), angular.module("cvbuilder.services", []), angular.module("cvbuilder.services").service("authService", [ "$rootScope", "$http", "$location", "$q", "$cookieStore", "base64", "messageService", "userService", function(a, b, c, d, e, f, g, h) {
+    var i = function() {
+        e.remove("user-session"), b.defaults.headers.common.Authorization = "", h.clear();
+    }, j = function(a) {
+        var d = {
+            headers: {
+                Authorization: "Basic " + f.encode(a.username + ":" + a.password),
+                Accept: "application/json;odata=verbose"
             }
         };
-    }, i = h().create(), j = function(a) {
-        return i.is_authenticated = null != a.data.access_token, i.is_authenticated ? (i.token = a.data.access_token, 
-        i.token_expiry = a.data.expires_in, b.defaults.headers.common.Authorization = "Session " + i.token) : d.reject("An error occurrred during authentication"), 
-        i;
-    }, k = function(a) {
-        return i.details = a.data, i;
-    }, l = function() {
-        e.remove("user-session"), b.defaults.headers.common.Authorization = "", i = h().create();
+        return b.post("/api/authenticate", null, d).then(function(a) {
+            var d = h.user();
+            d.token = a.data.access_token, d.token_expiry = a.data.expires_in, d.is_authenticated = null !== d.token, 
+            b.defaults.headers.common.Authorization = "Session " + d.token, h.getUserDetails().then(function() {
+                var a = h.user();
+                e.put("user-session", a), c.path("/dashboard");
+            });
+        }, function() {
+            //error
+            g.addAlert("Could not login", !1);
+        });
     };
     return a.$on("logout", function() {
-        l();
+        i();
     }), {
-        user: function() {
-            return i;
-        },
         logout: function() {
-            b.post("/api/logout"), l();
+            b.post("/api/logout"), i();
         },
-        register: function(a, c) {
+        login: function(a) {
+            return j(a);
+        },
+        register: function(a) {
+            var c = f.encode(a.username + ":" + a.password), d = {
+                headers: {
+                    Authorization: null,
+                    Accept: "application/json;odata=verbose"
+                }
+            };
             return b.put("/api/register", {
-                username: a,
-                password: c
-            }).then(function() {
-                g.addAlert("Could not register you with the system", !1);
-            });
-        },
-        update: function(a, c) {
-            return b.post("/api/account/update", {
-                user: a,
-                password: f.encode(void 0 === c ? "" : c)
-            }).then(function() {
-                g.addMessage("Your details have been successfully updated");
-            }, function() {
-                g.addAlert("Failed to update your account. Please try again.", !1);
-            });
-        },
-        login: function(a, c) {
-            return b.defaults.headers.common.Authorization = "Basic " + f.encode(a + ":" + c), 
-            b.post("/api/authenticate").then(function(a) {
+                cred: c
+            }, d).then(function() {
                 return j(a);
-            }, function() {
-                //error
-                g.addAlert("Could not login", !1);
+            }, function(a) {
+                g.addAlert(a.data.message, !1);
             });
         },
-        getUserDetails: function() {
-            return b.get("/api/account").then(function(a) {
-                return k(a);
-            }, function() {
-                g.addAlert("Could not get user information", !1);
-            });
+        storeToCookie: function() {
+            var a = h.user();
+            e.put("user-session", a);
         },
-        store: function() {
-            e.put("user-session", i);
-        },
-        restore: function() {
-            if (i.is_authenticated) return !0;
-            var a = d.defer(), c = e.get("user-session");
-            return c && (i = c, b.defaults.headers.common.Authorization = "Session " + i.token), 
-            a && a.resolve(), a.promise;
+        restoreFromCookie: function() {
+            var a = h.user();
+            if (a.is_authenticated) return !0;
+            var c = d.defer(), f = e.get("user-session");
+            return f && (h.setUser(f), b.defaults.headers.common.Authorization = "Session " + a.token), 
+            c && c.resolve(), c.promise;
         }
     };
 } ]), angular.module("cvbuilder.services").service("base64", function() {
@@ -298,6 +263,56 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             a.messages = [], a.$broadcast("handleMessageBroadcast");
         }
     };
+} ]), angular.module("cvbuilder.services").service("userService", [ "$rootScope", "$http", "$location", "$q", "$cookieStore", "base64", "messageService", function(a, b, c, d, e, f, g) {
+    var h = function() {
+        return {
+            create: function() {
+                return {
+                    is_authenticated: !1,
+                    token: "",
+                    token_expiry: "",
+                    details: {
+                        first_name: "",
+                        last_name: "",
+                        photo: "",
+                        username: "",
+                        claims: []
+                    }
+                };
+            }
+        };
+    }, i = h().create();
+    return {
+        isAuthenticated: function() {
+            return void 0 !== i && i.is_authenticated;
+        },
+        user: function() {
+            return i;
+        },
+        setUser: function(a) {
+            i = a;
+        },
+        clear: function() {
+            i = h().create();
+        },
+        update: function(a, c) {
+            return b.post("/api/account/update", {
+                user: a,
+                password: f.encode(void 0 === c ? "" : c)
+            }).then(function() {
+                g.addMessage("Your details have been successfully updated");
+            }, function() {
+                g.addAlert("Failed to update your account. Please try again.", !1);
+            });
+        },
+        getUserDetails: function() {
+            return b.get("/api/account").then(function(a) {
+                i.details = a.data;
+            }, function() {
+                g.addAlert("Could not get user information", !1);
+            });
+        }
+    };
 } ]), angular.module("cvbuilder.services").service("versionService", [ "$http", function(a) {
     return {
         getVersion: function() {
@@ -307,4 +322,4 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         }
     };
 } ]), // Declare app level module which depends on filters, and services
-angular.module("cvbuilder", [ "cvbuilder.services", "cvbuilder.routes", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.directives", "cvbuilder.interceptors", "cvbuilder.controllers", "ngRoute", "ngCookies" ]);
+angular.module("cvbuilder", [ "cvbuilder.routes", "cvbuilder.config", "cvbuilder.filters", "cvbuilder.directives", "cvbuilder.interceptors", "cvbuilder.controllers", "cvbuilder.services", "ngRoute", "ngCookies" ]);

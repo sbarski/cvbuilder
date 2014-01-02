@@ -9,7 +9,7 @@
 
 angular
     .module('cvbuilder.config')
-    .run(['$rootScope', '$location', '$q', 'accountService', 'messageService', function ($rootScope, $location, $q, accountService, messageService) {
+    .run(['$rootScope', '$location', '$q', 'userService', 'messageService', 'authService', function ($rootScope, $location, $q, userService, messageService, authService) {
 
     var routeRequiresAuthentication = function(next) {
         return next.data && next.data.authenticated;
@@ -21,18 +21,18 @@ angular
 
     $rootScope.$on('$routeChangeStart', function (event, next, current) {
         //detect logout
-        $q.when(accountService.restore()).then(function (result) { //this doesn't need to be async for now but will help in the future
-            if (next.$$route.originalPath === '/login' && accountService.user().is_authenticated) {
+        $q.when(authService.restoreFromCookie()).then(function (result) { //this doesn't need to be async for now but will help in the future
+            if (next.$$route.originalPath === '/login' && userService.isAuthenticated()) {
                 $location.path('/dashboard');
             }
 
-            if (routeRequiresAuthentication(next) && !accountService.user().is_authenticated) {
+            if (routeRequiresAuthentication(next) && !userService.isAuthenticated()) {
                 messageService.addAlert('Sorry - but you must be authenticated', true);
                 $location.path('/login');
             }
 
             if (routeRequiresClaim(next)) {
-                var check = _.find(accountService.user().details.claims, function (claim) {
+                var check = _.find(userService.user().details.claims, function (claim) {
                     return _.find(next.data.claims, function (route) {
                         return route.resource === claim.resource && route.action === claim.action;
                     });

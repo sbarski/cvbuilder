@@ -14,6 +14,8 @@ open Thinktecture.IdentityModel.Tokens.Http
 open System.IdentityModel.Tokens
 open System.IdentityModel.Protocols.WSTrust
 open Thinktecture.IdentityModel.Authorization.WebApi
+open cvbuilder.core.db
+open cvbuilder.web.Helpers
 
 type HttpRouteDefaults = { Controller: string; Id : obj}
 
@@ -50,10 +52,12 @@ type Global() =
             { Controller = "Home"; Id = RouteParameter.Optional}) |> ignore
 
     member this.ValidateUser(username: string, password: string) =
-        if username = "admin" && password = "admin" then
-            true
-        else
+        let user = GetUser username password
+
+        if isNull user || String.IsNullOrEmpty user.username || user.id = Guid.Empty then
             raise (new AuthenticationException())
+        else
+            true
 
 
     member this.ConfigureAuthentication (config: HttpConfiguration) =
@@ -90,6 +94,10 @@ type Global() =
     member this.Application_Start (sender: obj) (e: EventArgs) =
         GlobalConfiguration.Configure(Action<_> this.RegisterWebApi)
         GlobalConfiguration.Configure(Action<_> this.ConfigureAuthentication)
+
+        let db = cvbuilder.core.db.instance()
+        db.run()
+
         ()
 
 

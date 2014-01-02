@@ -18,6 +18,5 @@ open Thinktecture.IdentityModel.Authorization.WebApi
 type LogoutController() =
     inherit ApiController()
 
-    [<Authorize>]
     member x.Post() =
         x.Request.CreateResponse(HttpStatusCode.OK);

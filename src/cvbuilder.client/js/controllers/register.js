@@ -1,8 +1,8 @@
 ﻿angular
     .module('cvbuilder.controllers')
-    .controller('registerController', ['$scope', "$location", 'cache', 'messageService', 'accountService', function ($scope, $location, cache, messageService, accountService) {
+    .controller('registerController', ['$rootScope', '$scope', "$location", 'cache', 'messageService', 'authService', function ($rootScope, $scope, $location, cache, messageService, authService) {
 
     $scope.register = function(user) {
-        accountService.register(user.username, user.password);
+        authService.register(user);
     };
 }]);

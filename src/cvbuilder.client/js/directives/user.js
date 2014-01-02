@@ -1,15 +1,15 @@
 angular.module('cvbuilder.directives').
-  directive('user', ['$location', 'accountService', function ($location, accountService) {
+  directive('user', ['$location', 'authService', 'userService', function ($location, authService, userService) {
     return {
         restrict: 'AE',
         scope: {
           ngModel: '='  
         },
         controller: ['$scope', function ($scope) {
-            $scope.user = accountService.user().details;
+            $scope.user = userService.user().details;
 
             $scope.logout = function() {
-                accountService.logout();
+                authService.logout();
                 $scope.user = {};
                 $location.path('/');
             };
