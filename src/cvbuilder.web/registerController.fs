@@ -28,7 +28,7 @@ type RegisterController() =
             let user = data.GetValue("cred").ToString()
                        |> fun result -> System.Text.Encoding.Default.GetString (System.Convert.FromBase64String result)       
                        |> fun line -> line.Split([|':'|]) 
-                       |> fun data -> {username =  data.[0]; password = data.[1]; auth_token=""; id = Guid.NewGuid(); created_on = DateTimeOffset.UtcNow; updated_on = DateTimeOffset.UtcNow }
+                       |> fun data -> {defaultUser with username = data.[0]; password = data.[1]; id = Guid.NewGuid(); created_on = DateTimeOffset.UtcNow; updated_on = DateTimeOffset.UtcNow }
 
             if UserExists user.username then
                 x.Request.CreateErrorResponse(HttpStatusCode.PreconditionFailed, "User with the given username/email already exists.")

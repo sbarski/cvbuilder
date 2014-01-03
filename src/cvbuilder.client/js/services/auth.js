@@ -71,7 +71,6 @@
             },
             restoreFromCookie: function () {
                 var user = userService.user();
-
                 if (user.is_authenticated) {
                     return true;
                 }
@@ -81,13 +80,12 @@
                 var restored = $cookieStore.get('user-session');
                 if (restored) {
                     userService.setUser(restored);
-                    $http.defaults.headers.common['Authorization'] = 'Session ' + user.token;
+                    $http.defaults.headers.common['Authorization'] = 'Session ' + restored.token;
                 }
 
                 if (defer) {
                     defer.resolve();
                 }
-
                 return defer.promise;
             }
         };

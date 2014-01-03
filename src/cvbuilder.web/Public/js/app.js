@@ -208,7 +208,7 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
             var a = h.user();
             if (a.is_authenticated) return !0;
             var c = d.defer(), f = e.get("user-session");
-            return f && (h.setUser(f), b.defaults.headers.common.Authorization = "Session " + a.token), 
+            return f && (h.setUser(f), b.defaults.headers.common.Authorization = "Session " + f.token), 
             c && c.resolve(), c.promise;
         }
     };
@@ -281,13 +281,15 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
                 };
             }
         };
-    }, i = h().create();
+    }, i = h().create(), j = function() {
+        return i;
+    };
     return {
         isAuthenticated: function() {
             return void 0 !== i && i.is_authenticated;
         },
         user: function() {
-            return i;
+            return j();
         },
         setUser: function(a) {
             i = a;

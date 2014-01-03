@@ -9,14 +9,31 @@ module db =
     open System.Configuration
 
     [<CLIMutable>]
-    type UserDetails = { first_name: string; last_name: string; }
-    
-    [<CLIMutable>]
-    type User = { auth_token: string; username: string; password: string; id: System.Guid; created_on: System.DateTimeOffset; updated_on: System.DateTimeOffset}
+    type User = { 
+        id: System.Guid; 
+        auth_token: string; 
+        username: string; 
+        password: string; 
+        created_on: System.DateTimeOffset; 
+        updated_on: System.DateTimeOffset; 
+        first_name: string; 
+        last_name: string
+    }
+
+    let defaultUser = {
+        id = Guid.Empty;
+        auth_token = String.Empty;
+        username = String.Empty;
+        password = String.Empty;
+        created_on = DateTimeOffset.MinValue;
+        updated_on = DateTimeOffset.MinValue;
+        first_name = String.Empty; 
+        last_name = String.Empty;
+    }
 
     let client = new GraphClient(new Uri("http://localhost:7474/db/data"))
 
-    let CreateUser user = 
+    let CreateUser (user: User) = 
         try
             client.Cypher
                 .Create("(x: User {param})")
@@ -51,6 +68,22 @@ module db =
             .Where(fun (x:User) -> x.username = username)
             .Set("x.auth_token = {token}")
             .WithParam("token", token)
+            .ExecuteWithoutResults()
+
+    let GetCurrentUser username = 
+        client.Cypher
+            .Match("(x: User {username:{username}})")
+            .WithParam("username", username)
+            .Return<User>("x")
+            .Results
+            .SingleOrDefault()
+
+    let SaveCurrentUser (user:User) =
+        client.Cypher
+            .Match("(x:User)")
+            .Where(fun (x:User) -> x.id = user.id)
+            .Set("x = {user}")
+            .WithParam("user", user)
             .ExecuteWithoutResults()
 
     type instance() =

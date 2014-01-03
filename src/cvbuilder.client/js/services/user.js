@@ -21,12 +21,16 @@
 
         var user = userFactory().create();
 
+        var currentUser = function() {
+            return user;
+        };
+
         return {
             isAuthenticated: function (){
                 return user !== undefined && user.is_authenticated;  
             },
             user: function() {
-                return user;
+                return currentUser();
             },
             setUser: function(restoredUser) {
                 user = restoredUser;
