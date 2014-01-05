@@ -44,7 +44,6 @@ type AccountController() =
     [<Route("update")>]
     member x.Post([<FromBody>] data: Newtonsoft.Json.Linq.JObject) =
         let user = GetCurrentUser x.User.Identity.Name
-        
         let currentPassword = user.password
         let password = data.SelectToken("password").ToObject()
                                 |> fun result -> System.Text.Encoding.Default.GetString (System.Convert.FromBase64String result) 

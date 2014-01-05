@@ -46,7 +46,23 @@
                 userLogout();
             },
             login: function (data) {
-                return userLogin(data);
+                return userLogin(data); 
+            },
+            loginWithGoogleAndCode: function(code) {
+                $http.get('/api/oauth/google?code=' + code).then(function(result) {
+                    console.log(result);
+                }, function(error) {
+
+                });
+            },
+            loginWithGoogle: function () {
+                //$http.get('/api/login/google', {headers:{"Access-Control-Allow-Origin":"*"}}).then(function(result) {
+                //    console.log(result);
+                //}, function(error) {
+                //    console.log("err: ");
+                //    console.log(error);
+                //});
+                window.location ='/api/login/google';
             },
             register: function (data) {
                 var auth = base64.encode(data.username + ':' + data.password);

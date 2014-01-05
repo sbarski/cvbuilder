@@ -12,9 +12,13 @@
                 templateUrl: '/public/views/home/register.html',
                 controller: 'registerController'
             })
-            .when('/login', {
+            .when('/login/:provider', {
                 templateUrl: '/public/views/home/login.html',
                 controller: 'loginController'
+            })
+            .when('/oauth/:provider?', {
+                templateUrl: '/public/views/home/login.html',
+                controller: 'oauthController'
             })
             .when('/status/:code', {
                 templateUrl: function(routeParameters) {

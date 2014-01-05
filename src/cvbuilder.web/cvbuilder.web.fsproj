@@ -94,11 +94,13 @@
     <None Include="web.config" />
     <None Include="Global.asax" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="LoginController.fs" />
     <Compile Include="LogoutController.fs" />
     <Compile Include="ResponseService.fs" />
     <Compile Include="SecurityService.fs" />
     <Compile Include="Helpers.fs" />
     <Compile Include="Global.asax.fs" />
+    <Compile Include="OAuthController.fs" />
     <Compile Include="HomeController.fs" />
     <Compile Include="VersionController.fs" />
     <Compile Include="RegisterController.fs" />
@@ -149,6 +151,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\cvbuilder.auth\cvbuilder.auth.fsproj">
+      <Name>cvbuilder.auth</Name>
+      <Project>{083d4608-e1a4-4a9d-a77f-1d357eeb4189}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\cvbuilder.core\cvbuilder.core.fsproj">
       <Name>cvbuilder.core</Name>
       <Project>{13c8bea3-8459-45bc-b6f9-7ddab2236c6b}</Project>

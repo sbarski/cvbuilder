@@ -1,7 +1,19 @@
 ﻿angular
     .module('cvbuilder.controllers')
-    .controller('loginController', ['$rootScope', '$scope', "$location", 'cache', 'messageService', 'authService', function ($rootScope, $scope, $location, cache, messageService, authService) {
-        $scope.login = function(user) {
+    .controller('loginController', ['$rootScope', '$routeParams', '$scope', "$location", 'cache', 'messageService', 'authService', function ($rootScope, $routeParams, $scope, $location, cache, messageService, authService) {
+        if ($routeParams.provider) {
+            switch ($routeParams.provider) {
+                case "google":
+                    authService.loginWithGoogle();
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+
+        $scope.login = function (user) {
             authService.login(user);
         };
 }]);

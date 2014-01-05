@@ -16,6 +16,7 @@ open Thinktecture.IdentityModel.Authorization.WebApi
 open Microsoft.FSharp.Core
 open Newtonsoft.Json.Linq
 open cvbuilder.core.db
+open cvbuilder.auth
 
 [<RoutePrefix("api/register")>]
 type RegisterController() =

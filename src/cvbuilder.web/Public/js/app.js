@@ -1,4 +1,4 @@
-/*! 2014-01-02 */
+/*! 2014-01-05 */
 "use strict";
 
 angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$locationProvider", function(a, b) {
@@ -9,9 +9,12 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     }).when("/register", {
         templateUrl: "/public/views/home/register.html",
         controller: "registerController"
-    }).when("/login", {
+    }).when("/login/:provider", {
         templateUrl: "/public/views/home/login.html",
         controller: "loginController"
+    }).when("/oauth/:provider?", {
+        templateUrl: "/public/views/home/login.html",
+        controller: "oauthController"
     }).when("/status/:code", {
         templateUrl: function(a) {
             return "/public/views/status/" + a.code + ".html";
@@ -50,7 +53,7 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         //detect logout
         c.when(f.restoreFromCookie()).then(function() {
             if (//this doesn't need to be async for now but will help in the future
-            "/login" === i.$$route.originalPath && d.isAuthenticated() && b.path("/dashboard"), 
+            i.$$route && "/login" === i.$$route.originalPath && d.isAuthenticated() && b.path("/dashboard"), 
             g(i) && !d.isAuthenticated() && (e.addAlert("Sorry - but you must be authenticated", !0), 
             b.path("/login")), h(i)) {
                 var a = _.find(d.user().details.claims, function(a) {
@@ -69,13 +72,23 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
     }, a.delete = function(a) {
         e.delete(a);
     };
-} ]), angular.module("cvbuilder.controllers").controller("loginController", [ "$rootScope", "$scope", "$location", "cache", "messageService", "authService", function(a, b, c, d, e, f) {
-    b.login = function(a) {
-        f.login(a);
+} ]), angular.module("cvbuilder.controllers").controller("loginController", [ "$rootScope", "$routeParams", "$scope", "$location", "cache", "messageService", "authService", function(a, b, c, d, e, f, g) {
+    if (b.provider) switch (b.provider) {
+      case "google":
+        g.loginWithGoogle();
+    }
+    c.login = function(a) {
+        g.login(a);
     };
-} ]), angular.module("cvbuilder.controllers").controller("registerController", [ "$rootScope", "$scope", "$location", "cache", "messageService", "authService", function(a, b, c, d, e, f) {
-    b.register = function(a) {
-        f.register(a);
+} ]), angular.module("cvbuilder.controllers").controller("oauthController", [ "$rootScope", "$routeParams", "$scope", "$location", "cache", "messageService", "authService", function(a, b, c, d, e, f, g) {
+    if (//OAUTH CONTROLLER
+    console.log("oauth"), b.provider) switch (b.provider) {
+      case "google":
+        g.loginWithGoogleAndCode(b.code);
+    }
+} ]), angular.module("cvbuilder.controllers").controller("registerController", [ "$rootScope", "$routeParams", "$scope", "$location", "cache", "messageService", "authService", function(a, b, c, d, e, f, g) {
+    c.register = function(a) {
+        g.register(a);
     };
 } ]), angular.module("cvbuilder.controllers").controller("versionController", [ "$scope", "cache", "versionService", function(a, b, c) {
     var d = b.get("version");
@@ -184,6 +197,20 @@ angular.module("cvbuilder.routes", [ "ngRoute" ]).config([ "$routeProvider", "$l
         },
         login: function(a) {
             return j(a);
+        },
+        loginWithGoogleAndCode: function(a) {
+            b.get("/api/oauth/google?code=" + a).then(function(a) {
+                console.log(a);
+            }, function() {});
+        },
+        loginWithGoogle: function() {
+            //$http.get('/api/login/google', {headers:{"Access-Control-Allow-Origin":"*"}}).then(function(result) {
+            //    console.log(result);
+            //}, function(error) {
+            //    console.log("err: ");
+            //    console.log(error);
+            //});
+            window.location = "/api/login/google";
         },
         register: function(a) {
             var c = f.encode(a.username + ":" + a.password), d = {
