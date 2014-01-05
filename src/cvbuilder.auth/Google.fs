@@ -88,6 +88,5 @@ type OAuthCallback() =
         state.Scope.Add("https://www.googleapis.com/auth/userinfo.email") |> ignore
         let request = AuthHelper.Client.PrepareRequestUserAuthorization(state)
         request.Headers.Add("Access-Control-Allow-Origin", "*")
-        request.Headers.Add("Authorization", String.Format("Bearer {0}", )
         request.AsHttpResponseMessage()
 
